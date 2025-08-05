@@ -56,7 +56,7 @@ def process_video(video_path, calib_path, output_path):
     print(f"Finished processing video: {video_path}")
 
 def main():
-    video_files = glob.glob("out*.mp4") # path to the video files
+    video_files = glob.glob("mocap_7_videos/out*.mp4") # path to the video files
     output_dir = "" # folder path where to save the rectified videos
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
