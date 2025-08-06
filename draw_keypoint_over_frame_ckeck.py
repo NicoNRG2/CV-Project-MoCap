@@ -1,3 +1,6 @@
+""" 
+DISEGNA KEYPOINT E SCHEELTRO DATO UN FRAME IN 2D"""
+
 import cv2
 import json
 import argparse
