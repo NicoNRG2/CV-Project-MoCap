@@ -63,4 +63,4 @@ print(f"MPJPE (pixel):  {mpjpe:.3f}\n")
 # metriche per giunto
 print("MPJPE per giunto:")
 for j, errs in sorted(per_joint.items()):
-    print(f"  giunto {j:02d}: {np.mean(errs):.2f} px  (N={len(errs)})")
+    print(f"  giunto {j:02d}: {np.mean(errs):.2f} px")
