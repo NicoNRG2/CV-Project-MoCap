@@ -1,8 +1,8 @@
 import json
 
 # Read the JSON file
-input_file = "c:/Users/nicol/Desktop/Computer Vision/CVLaboratories2024-2025/CV-Project-MoCap/dati_tuta_8p3.json"
-output_file = "c:/Users/nicol/Desktop/Computer Vision/CVLaboratories2024-2025/CV-Project-MoCap/dati_tuta_8p3_renamed.json"
+input_file = "selected_keypoints_adapted_joints_48frames.json"
+output_file = "final_mocap.json"
 
 # Load JSON data
 with open(input_file, 'r') as f:

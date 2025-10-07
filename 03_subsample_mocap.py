@@ -109,4 +109,4 @@ if __name__ == "__main__":
     main()
 
 
-# python subsample_mocap.py -i dati_tuta_filtrati.json -o dati_tuta_8p3.json --start 980 --step 8.3
+# python 03_subsample_mocap.py -i selected_keypoints_adapted_joints.json -o selected_keypoints_adapted_joints_48frames.json --start 980 --step 8.3

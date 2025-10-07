@@ -35,16 +35,24 @@ def load_frames(path):
     with open(path, "r") as f:
         data = json.load(f)
 
+    # Se contiene il campo "skeleton_3d", entra nel sotto-dizionario
+    if "skeleton_3d" in data:
+        data = data["skeleton_3d"]
+
     def frame_key(k):
-        try: return int(k.split("_")[-1])
-        except: return 0
+        try:
+            return int(k.split("_")[-1])
+        except Exception:
+            return 0
 
     keys = sorted(list(data.keys()), key=frame_key)
     frames = [np.array(data[k], dtype=float) for k in keys]
+
     nJ = len(JOINTS)
     frames = [f for f in frames if f.shape == (nJ, 3)]
     if not frames:
         raise ValueError("Nessun frame valido nel JSON (attesi 18 joint per frame).")
+
     return frames
 
 def compute_bounds(frames, pad_ratio=0.05):
@@ -179,7 +187,7 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
 
 def main():
     ap = argparse.ArgumentParser(description="Animazione 3D/2D MoCap da JSON")
-    ap.add_argument("--input", "-i", type=str, default="dati_tuta_filtrati.json",
+    ap.add_argument("--input", "-i", type=str, default="triangulated_3d_skeleton.json",
                     help="Percorso al file JSON")
     ap.add_argument("--out", "-o", type=str, default="skeleton_animation.mp4",
                     help="Output (mp4/gif/png). mp4 richiede ffmpeg.")
@@ -203,4 +211,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-# python animate_mocap.py --input dati_tuta_filtrati.json --out skel.mp4 --fps 100
+# python .\animate_triangulation.py --input .\triangulated_3d_skeleton.json --out triangulated.mp4 --fps 12

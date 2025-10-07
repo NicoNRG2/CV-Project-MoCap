@@ -3,95 +3,107 @@
 """
 Confronto frame-by-frame tra:
 - MoCap JSON (frames al top-level): dati_tuta_8p3_renamed.json
-- Triangolazione JSON (frames sotto "skeleton_3d"): triangulated_3d_skeleton.json
+- Triangolazione JSON (frames al top-level OPPURE sotto una chiave, es. 'skeleton_3d')
 
 Output:
-- summary.csv con una riga per frame (MPJPE, median, max, MAE per asse, ecc.)
-- (opzionale) cartella per-frame con CSV degli errori per joint
+- summary.csv con una riga per frame (MPJPE, median, max, MAE per asse, MSE, RMSE)
+- (opzionale) CSV per-frame con errori per joint
 
-Uso:
+Uso tipico (nuovo JSON: frames al top-level):
 python compare_mocap_vs_triang.py \
   --mocap /mnt/data/dati_tuta_8p3_renamed.json \
   --triang /mnt/data/triangulated_3d_skeleton.json \
-  --triang-key skeleton_3d \
   --out out_compare \
   --per-frame-csv \
-  --align rigid        # oppure: none | rigid | similarity
+  --align rigid        # none | rigid | similarity
+
+Uso retro-compatibile (vecchio JSON con chiave):
+  ... --triang-key skeleton_3d
 """
 
 import argparse
 import json
-import os
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 def load_frames_mocap(path: str) -> Dict[str, List[List[float]]]:
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
-    # data: { "frame_0001": [[x,y,z], ...], ... }
+    # Atteso: { "frame_0001": [[x,y,z], ...], ... }
     return data
 
-def load_frames_triang(path: str, key: str) -> Dict[str, List[List[float]]]:
+def _looks_like_frames_mapping(obj) -> bool:
+    if not isinstance(obj, dict):
+        return False
+    # euristica: almeno una chiave che inizia con "frame_" e valore lista di [x,y,z]
+    for k, v in obj.items():
+        if isinstance(k, str) and k.startswith("frame_") and isinstance(v, list):
+            return True
+    return False
+
+def load_frames_triang(path: str, key: Optional[str] = None) -> Dict[str, List[List[float]]]:
+    """
+    Carica i frame di triangolazione:
+    - Se key è fornita e presente -> usa data[key]
+    - Altrimenti prova ad usare i frame al top-level
+    - Se esiste una singola chiave che contiene i frame, usa quella
+    """
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
-    # data: { key: { "frame_0001": [[x,y,z], ...], ... }, ... }
-    if key not in data:
-        raise KeyError(f"Chiave '{key}' non trovata nel file triangolazione.")
-    return data[key]
+
+    # 1) Se l'utente ha indicato una chiave, prova ad usarla
+    if key:
+        if key in data and _looks_like_frames_mapping(data[key]):
+            return data[key]
+        else:
+            print(f"[INFO] Chiave '{key}' non trovata o non valida, provo i frame al top-level...")
+
+    # 2) Top-level?
+    if _looks_like_frames_mapping(data):
+        return data
+
+    # 3) Un solo livello contenitore?
+    if isinstance(data, dict) and len(data) == 1:
+        only_key, only_val = next(iter(data.items()))
+        if _looks_like_frames_mapping(only_val):
+            print(f"[INFO] Uso la chiave auto-rilevata '{only_key}'.")
+            return only_val
+
+    raise KeyError("Formato JSON della triangolazione non riconosciuto: non trovo un mapping 'frame_xxxx'.")
 
 def kabsch(P: np.ndarray, Q: np.ndarray, allow_scale: bool=False) -> Tuple[np.ndarray, np.ndarray, float]:
-    """
-    Trova (R, t, s) che minimizzano || s*R*P + t - Q ||_F.
-    - P, Q: (N,3) punti corrispondenti.
-    - allow_scale=True -> stima anche scala s (similarity); altrimenti s=1 (rigid).
-    Ritorna: (R, t, s)
-    """
     assert P.shape == Q.shape and P.shape[1] == 3
-    # Centra
     Pc = P.mean(axis=0, keepdims=True)
     Qc = Q.mean(axis=0, keepdims=True)
     P0 = P - Pc
     Q0 = Q - Qc
 
-    # Scala (opzionale)
+    H = P0.T @ Q0
+    U, S, Vt = np.linalg.svd(H)
+    R = Vt.T @ U.T
+    if np.linalg.det(R) < 0:
+        Vt[-1, :] *= -1
+        R = Vt.T @ U.T
+
     if allow_scale:
         varP = (P0**2).sum()
-        # SVD su Q0^T P0
-        H = P0.T @ Q0
-        U, S, Vt = np.linalg.svd(H)
-        R = Vt.T @ U.T
-        if np.linalg.det(R) < 0:
-            Vt[-1, :] *= -1
-            R = Vt.T @ U.T
         s = (S.sum()) / varP if varP > 0 else 1.0
     else:
-        H = P0.T @ Q0
-        U, S, Vt = np.linalg.svd(H)
-        R = Vt.T @ U.T
-        if np.linalg.det(R) < 0:
-            Vt[-1, :] *= -1
-            R = Vt.T @ U.T
         s = 1.0
 
     t = (Qc.T - s * R @ Pc.T).reshape(3)
     return R, t, s
 
 def compute_errors(A: np.ndarray, B: np.ndarray) -> Dict[str, float]:
-    """
-    A, B: (J,3) set di punti (stessa joint order).
-    Ritorna metriche aggregate + per-asse.
-    """
     diffs = A - B
-    dists = np.linalg.norm(diffs, axis=1)  # per-joint Euclidee
-
-    mae_xyz = np.mean(np.abs(diffs), axis=0)  # |Δx|, |Δy|, |Δz|
-    mse = float(np.mean(dists**2))            # Mean Squared Error
-    rmse = float(np.sqrt(mse))                # Root Mean Squared Error
-
+    dists = np.linalg.norm(diffs, axis=1)
+    mae_xyz = np.mean(np.abs(diffs), axis=0)
+    mse = float(np.mean(dists**2))
+    rmse = float(np.sqrt(mse))
     return {
-        "mpjpe": float(np.mean(dists)),       # Mean Per Joint Position Error
+        "mpjpe": float(np.mean(dists)),
         "median": float(np.median(dists)),
         "max": float(np.max(dists)),
         "mae_x": float(mae_xyz[0]),
@@ -105,11 +117,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mocap", required=True, help="Path al JSON MoCap (frames al top-level).")
     ap.add_argument("--triang", required=True, help="Path al JSON triangolazione.")
-    ap.add_argument("--triang-key", default="skeleton_3d", help="Chiave che contiene i frame nel JSON triangolazione.")
+    ap.add_argument("--triang-key", default=None, help="(Opzionale) Chiave che contiene i frame nel JSON triangolazione.")
     ap.add_argument("--out", default="out_compare", help="Cartella output.")
     ap.add_argument("--per-frame-csv", action="store_true", help="Scrive CSV per ogni frame con errori per joint.")
     ap.add_argument("--align", choices=["none", "rigid", "similarity"], default="none",
-                   help="Allineamento prima del confronto: none, rigid (Kabsch), similarity (rot+trasl+scala).")
+                   help="Allineamento: none, rigid (Kabsch), similarity (rot+trasl+scala).")
     args = ap.parse_args()
 
     out_dir = Path(args.out)
@@ -118,7 +130,6 @@ def main():
     if args.per_frame_csv:
         per_frame_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1) Carica
     mocap = load_frames_mocap(args.mocap)
     triang = load_frames_triang(args.triang, args.triang_key)
 
@@ -137,31 +148,27 @@ def main():
 
     rows = []
     for fr in common:
-        A = np.asarray(mocap[fr], dtype=float)        # (J,3)
-        B = np.asarray(triang[fr], dtype=float)       # (J,3)
+        A = np.asarray(mocap[fr], dtype=np.float64)
+        B = np.asarray(triang[fr], dtype=np.float64)
         if A.ndim != 2 or B.ndim != 2 or A.shape[1] != 3 or B.shape[1] != 3:
             print(f"[SKIP] {fr}: formato inatteso (shape A={A.shape}, B={B.shape})")
             continue
         if A.shape[0] != B.shape[0]:
-            print(f"[WARN] {fr}: joint count diverso (A={A.shape[0]}, B={B.shape[0]}). Confronto solo sugli indici comuni.")
+            print(f"[WARN] {fr}: joint count diverso (A={A.shape[0]}, B={B.shape[0]}). Confronto sugli indici comuni.")
             J = min(A.shape[0], B.shape[0])
             A = A[:J]
             B = B[:J]
 
-        # opzionale: allineamento
-        A_aligned = A.copy()
-        B_ref = B.copy()
+        A_aligned = A
+        B_ref = B
         if args.align != "none":
             allow_scale = (args.align == "similarity")
-            # Allineo MoCap -> Triangolazione (per confronto)
             R, t, s = kabsch(A, B, allow_scale=allow_scale)
-            A_aligned = (s * (A @ R.T)) + t  # attenzione: (J,3) * (3,3)^T
+            A_aligned = (s * (A @ R.T)) + t
 
-        # errori per joint
         diffs = A_aligned - B_ref
         dists = np.linalg.norm(diffs, axis=1)
 
-        # metriche aggregate
         metrics = compute_errors(A_aligned, B_ref)
         metrics.update({
             "frame": fr,
@@ -170,7 +177,6 @@ def main():
         })
         rows.append(metrics)
 
-        # CSV per-frame (opzionale)
         if args.per_frame_csv:
             df = pd.DataFrame({
                 "joint_idx": np.arange(A_aligned.shape[0]),
@@ -181,28 +187,21 @@ def main():
             })
             df.to_csv(per_frame_dir / f"{fr}.csv", index=False)
 
-    # Summary
     if rows:
         summary = pd.DataFrame(rows).sort_values("frame")
         summary.to_csv(out_dir / "summary.csv", index=False)
-        # stampa breve
-        mpjpe_mean = summary["mpjpe"].mean()
-        mpjpe_med = summary["mpjpe"].median()
-        # print mse and rmse
-        mse_mean = summary["mse"].mean()
-        rmse_mean = summary["rmse"].mean()
         print(f"[DONE] Frame analizzati: {len(summary)}")
-        print(f"[STATS] MPJPE medio su tutti i frame: {mpjpe_mean:.3f}")
-        print(f"[STATS] MPJPE mediano su tutti i frame: {mpjpe_med:.3f}")
-        print(f"[STATS] MSE medio su tutti i frame: {mse_mean:.3f}")
-        print(f"[STATS] RMSE medio su tutti i frame: {rmse_mean:.3f}")
+        print(f"[STATS] MPJPE medio su tutti i frame: {summary['mpjpe'].mean():.3f}")
+        print(f"[STATS] MPJPE mediano su tutti i frame: {summary['mpjpe'].median():.3f}")
+        print(f"[STATS] MSE medio su tutti i frame: {summary['mse'].mean():.3f}")
+        print(f"[STATS] RMSE medio su tutti i frame: {summary['rmse'].mean():.3f}")
         print(f"[OUT]   {out_dir/'summary.csv'}")
         if args.per_frame_csv:
-            print(f"[OUT]   CSV per-frame in: {per_frame_dir}")
+            print(f"[OUT]   CSV per-frame in: {out_dir/'per_frame_errors'}")
     else:
         print("[DONE] Nessun frame in comune analizzabile.")
 
 if __name__ == "__main__":
     main()
 
-# python step3compare.py --mocap dati_tuta_8p3_renamed.json --triang triangulated_3d_skeleton.json --triang-key skeleton_3d --out out_compare --align rigid
+# python 03_step3compare.py --mocap final_mocap.json --triang final_triangulation.json --align similarity

@@ -35,7 +35,7 @@ for ann in data['annotations']:
     key    = f"frame_{frame}"
     annotations_by_frame.setdefault(key, {})[cam] = ann['keypoints']
 
-# 4) Triangola escludendo i punti occlusi (v<2)
+# 4) Triangola escludendo i punti occlusi (v<1)
 joints_3d = {}
 for frame_key, cams in annotations_by_frame.items():
     if len(cams) < 2:
@@ -48,7 +48,7 @@ for frame_key, cams in annotations_by_frame.items():
             x = kpts[3*j]
             y = kpts[3*j+1]
             v = kpts[3*j+2]
-            if v < 2:
+            if v < 1: # 0=missing, 1=occluded, 2=visible
                 continue
             P = proj_matrices.get(cam_idx)
             if P is None:

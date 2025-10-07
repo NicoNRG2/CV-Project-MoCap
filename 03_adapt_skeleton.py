@@ -28,8 +28,9 @@ def main(input_file, output_file):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Uso: python filter_coords.py input.json output.json")
+        print("Uso: python adapt_skeleton.py input.json output.json")
     else:
         main(sys.argv[1], sys.argv[2])
 
 # rimove 2,4,7,10,12,15 le coordinate dello scheletro in più del mocap
+# python 03_adapt_skeleton.py selected_keypoints.json selected_keypoints_adapted_joints.json
