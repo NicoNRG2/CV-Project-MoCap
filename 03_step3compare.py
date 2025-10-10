@@ -6,15 +6,13 @@ Confronto frame-by-frame tra:
 - Triangolazione JSON (frames al top-level OPPURE sotto una chiave, es. 'skeleton_3d')
 
 Output:
-- summary.csv con una riga per frame (MPJPE, median, max, MAE per asse, MSE, RMSE)
-- (opzionale) CSV per-frame con errori per joint
+- (solo console) statistiche: MPJPE medio/mediano, MSE medio, RMSE medio
+- NIENTE CSV su disco
 
 Uso tipico (nuovo JSON: frames al top-level):
 python compare_mocap_vs_triang.py \
   --mocap /mnt/data/dati_tuta_8p3_renamed.json \
   --triang /mnt/data/triangulated_3d_skeleton.json \
-  --out out_compare \
-  --per-frame-csv \
   --align rigid        # none | rigid | similarity
 
 Uso retro-compatibile (vecchio JSON con chiave):
@@ -118,17 +116,11 @@ def main():
     ap.add_argument("--mocap", required=True, help="Path al JSON MoCap (frames al top-level).")
     ap.add_argument("--triang", required=True, help="Path al JSON triangolazione.")
     ap.add_argument("--triang-key", default=None, help="(Opzionale) Chiave che contiene i frame nel JSON triangolazione.")
-    ap.add_argument("--out", default="out_compare", help="Cartella output.")
-    ap.add_argument("--per-frame-csv", action="store_true", help="Scrive CSV per ogni frame con errori per joint.")
+    ap.add_argument("--out", default="out_compare", help="(Ignorato) Cartella output: non si salvano CSV.")
+    ap.add_argument("--per-frame-csv", action="store_true", help="(Ignorato) Niente CSV per frame viene scritto.")
     ap.add_argument("--align", choices=["none", "rigid", "similarity"], default="none",
                    help="Allineamento: none, rigid (Kabsch), similarity (rot+trasl+scala).")
     args = ap.parse_args()
-
-    out_dir = Path(args.out)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    per_frame_dir = out_dir / "per_frame_errors"
-    if args.per_frame_csv:
-        per_frame_dir.mkdir(parents=True, exist_ok=True)
 
     mocap = load_frames_mocap(args.mocap)
     triang = load_frames_triang(args.triang, args.triang_key)
@@ -140,7 +132,7 @@ def main():
     missing_in_triang = sorted(mocap_frames - triang_frames)
     missing_in_mocap = sorted(triang_frames - mocap_frames)
 
-    print(f"[INFO] Frame in comune: {len(common)}")
+    print(f"[INFO] Common frames: {len(common)}")
     if missing_in_triang:
         print(f"[WARN] Frame presenti in MoCap ma non in Triangolazione: {len(missing_in_triang)} (es. {missing_in_triang[:5]})")
     if missing_in_mocap:
@@ -166,9 +158,6 @@ def main():
             R, t, s = kabsch(A, B, allow_scale=allow_scale)
             A_aligned = (s * (A @ R.T)) + t
 
-        diffs = A_aligned - B_ref
-        dists = np.linalg.norm(diffs, axis=1)
-
         metrics = compute_errors(A_aligned, B_ref)
         metrics.update({
             "frame": fr,
@@ -177,31 +166,18 @@ def main():
         })
         rows.append(metrics)
 
-        if args.per_frame_csv:
-            df = pd.DataFrame({
-                "joint_idx": np.arange(A_aligned.shape[0]),
-                "mocap_x": A_aligned[:,0], "mocap_y": A_aligned[:,1], "mocap_z": A_aligned[:,2],
-                "tri_x":  B_ref[:,0],      "tri_y":  B_ref[:,1],      "tri_z":  B_ref[:,2],
-                "dx": diffs[:,0], "dy": diffs[:,1], "dz": diffs[:,2],
-                "err_norm": dists
-            })
-            df.to_csv(per_frame_dir / f"{fr}.csv", index=False)
-
     if rows:
         summary = pd.DataFrame(rows).sort_values("frame")
-        summary.to_csv(out_dir / "summary.csv", index=False)
-        print(f"[DONE] Frame analizzati: {len(summary)}")
-        print(f"[STATS] MPJPE medio su tutti i frame: {summary['mpjpe'].mean():.3f}")
-        print(f"[STATS] MPJPE mediano su tutti i frame: {summary['mpjpe'].median():.3f}")
-        print(f"[STATS] MSE medio su tutti i frame: {summary['mse'].mean():.3f}")
-        print(f"[STATS] RMSE medio su tutti i frame: {summary['rmse'].mean():.3f}")
-        print(f"[OUT]   {out_dir/'summary.csv'}")
-        if args.per_frame_csv:
-            print(f"[OUT]   CSV per-frame in: {out_dir/'per_frame_errors'}")
+        print(f"[DONE] Frames analyzed: {len(summary)}")
+        print(f"[STATS] Mean MPJPE over all frames: {summary['mpjpe'].mean():.3f} mm")
+        print(f"[STATS] Median MPJPE over all frames: {summary['mpjpe'].median():.3f} mm")
+        print(f"[STATS] Mean MSE over all frames: {summary['mse'].mean():.3f} mm²")
+        print(f"[STATS] Mean RMSE over all frames: {summary['rmse'].mean():.3f} mm")
     else:
         print("[DONE] Nessun frame in comune analizzabile.")
 
 if __name__ == "__main__":
     main()
 
+# Esempio:
 # python 03_step3compare.py --mocap final_mocap.json --triang final_triangulation.json --align similarity

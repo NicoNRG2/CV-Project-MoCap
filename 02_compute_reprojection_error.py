@@ -34,7 +34,7 @@ per_joint = defaultdict(list)
 
 # ciclo sulle immagini che hanno annotazioni in entrambi i file
 common_ids = set(gt_map.keys()) & set(pred_map.keys())
-print(f"Immagini comuni: {len(common_ids)}")
+print(f"Common images: {len(common_ids)}")
 
 for img_id in common_ids:
     gt_coords, gt_mask     = gt_map[img_id]
@@ -55,12 +55,16 @@ all_errs = np.array(all_errs)
 mse   = np.mean(all_errs**2) if all_errs.size > 0 else float("nan")
 mpjpe = np.mean(all_errs)    if all_errs.size > 0 else float("nan")
 
-print("=== Metriche confronto GT vs riproiezioni ===")
-print(f"# errori calcolati = {all_errs.size}")
+print("=== Metrics: GT vs Reprojections Comparison ===")
+print(f"# errors computed = {all_errs.size}")
 print(f"MSE   (pixel²): {mse:.3f}")
 print(f"MPJPE (pixel):  {mpjpe:.3f}\n")
 
 # metriche per giunto
-print("MPJPE per giunto:")
+print("Per-joint MPJPE:")
 for j, errs in sorted(per_joint.items()):
-    print(f"  giunto {j:02d}: {np.mean(errs):.2f} px")
+    print(f"  joint {j:02d}: {np.mean(errs):.2f} px")
+
+
+#uso:
+# python .\02_compute_reprojection_error.py

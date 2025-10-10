@@ -78,3 +78,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+#uso:
+# python .\02_debug_plot_2D_compare_keypoints.py 1

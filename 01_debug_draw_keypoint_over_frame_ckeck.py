@@ -90,5 +90,5 @@ if __name__ == '__main__':
     main()
 
 # uso:
-# python .\draw_keypoint_over_frame_ckeck.py --image images\out2_frame_0019_png.rf.aa99af7677dc057dc1f577a91cafef39.jpg --annotations .\_annotations.coco.json --image_id 48 --output draw_normale.png
-# python .\draw_keypoint_over_frame_ckeck.py --image .\images_rectified\out2_frame_0019_png.rf.aa99af7677dc057dc1f577a91cafef39.jpg --annotations .\_annotations.coco.rectified.json --image_id 48 --output draw_ret.png
+# python .\01_debug_draw_keypoint_over_frame_ckeck.py --image images\out2_frame_0019_png.rf.aa99af7677dc057dc1f577a91cafef39.jpg --annotations .\_annotations.coco.json --image_id 48 --output 01_debug_draw_normale.png
+# python .\01_debug_draw_keypoint_over_frame_ckeck.py --image .\images_rectified\out2_frame_0019_png.rf.aa99af7677dc057dc1f577a91cafef39.jpg --annotations .\_annotations.coco.rectified.json --image_id 48 --output 01_debug_draw_ret.png
