@@ -199,4 +199,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-# python animate_mocap.py --input dati_tuta_filtrati.json --out skel.mp4 --fps 100
+# python 03_animate_mocap.py --input final_mocap.json --out 03_mocap_skeleton.gif --fps 12

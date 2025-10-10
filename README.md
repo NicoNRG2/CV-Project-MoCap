@@ -65,9 +65,9 @@ The MoCap system and the multiview RGB setup are **not synchronized**, so alignm
 Executed scripts
 ```bash
 python 03_animate_mocap.py                  # generate a video of the mocap data
-python 03_cut_frames.py                     # cut the shot part of our interest
-python 03_adapt_skeleton.py                 # remove extra bones
-python 03_subsample_mocap.py                # from 100 fps to 24 fps
+python 03_cut_frames.py --input keypoints_mocap.json --output selected_keypoints.json --start 980 --end 1372                     # cut the shot part of our interest
+python 03_adapt_skeleton.py selected_keypoints.json selected_keypoints_adapted_joints.json                 # remove extra bones
+python 03_subsample_mocap.py -i selected_keypoints_adapted_joints.json -o selected_keypoints_adapted_joints_48frames.json --start 980 --step 8.3                # from 100 fps to 24 fps
 python 03_rename_frame.py                   # e.g., frame_980 → frame_1
 python 03_reorder_triangulation_joints.py   # order the triangulation joint as the mocap
 python 03_step3compare.py
