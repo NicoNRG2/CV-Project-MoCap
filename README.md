@@ -50,7 +50,7 @@ python 02_triangulation.py
 python 02_plot_3d_skeleton.py [frame_number]
 python 02_generate_reprojected_annotations.py
 python 02_compute_reprojection_error.py
-python 02_animate_triangulation.py
+python 02_animate_triangulation.py  --input triangulated_3d_skeleton.json --out 02_triangulated_skeleton.gif --fps 12
 ```
 ### 3. Alignment with Motion Capture Data
 
@@ -124,6 +124,18 @@ Removed 6 extra joints:
 
 We planned to test a human pose estimation model (e.g., YOLO Pose), reprojecting its detections and comparing them with the MoCap ground truth.
 However, this step was skipped because the YOLO Pose skeleton structure is not compatible with the MoCap skeleton (only limbs are comparable).
+
+## Results
+<p align="center">
+  <img src="02_triangulated_skeleton.gif" width="45%" />
+  <img src="03_mocap_skeleton.gif" width="45%" />
+</p>
+
+### Triangulation vs MoCap (final accuracy):
+
+MPJPE 69.7 mm (mean), 69.8 mm (median)<br>
+MSE 5767.8 mm², RMSE 75.3 mm<br>
+Coherent 3D reconstruction with ~7–8 cm average joint error.
 
 ## 👥 Authors
 
