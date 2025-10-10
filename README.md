@@ -70,7 +70,7 @@ python 03_adapt_skeleton.py selected_keypoints.json selected_keypoints_adapted_j
 python 03_subsample_mocap.py -i selected_keypoints_adapted_joints.json -o selected_keypoints_adapted_joints_48frames.json --start 980 --step 8.3                # from 100 fps to 24 fps
 python 03_rename_frame.py                   # e.g., frame_980 → frame_1
 python 03_reorder_triangulation_joints.py   # order the triangulation joint as the mocap
-python 03_step3compare.py
+python 03_step3compare.py --mocap final_mocap.json --triang final_triangulation.json --align similarity
 ```
 
 | MoCap Frame | Triangulation Frame | Notes              |
