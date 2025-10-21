@@ -85,7 +85,7 @@ def main():
     ap.add_argument("--images", required=True, help="Cartella contenente le immagini")
     ap.add_argument("--output", required=True, help="Percorso del file JSON di output")
     ap.add_argument("--weights", default="yolo11l-pose.pt", help="Peso YOLO pose (es. yolo11l-pose.pt)")
-    ap.add_argument("--imgsz", type=int, default=1280, help="Dimensione di input (lato lungo)")
+    ap.add_argument("--imgsz", type=int, default=3840, help="Dimensione di input (lato lungo)")
     ap.add_argument("--conf", type=float, default=0.25, help="Confidence threshold")
     ap.add_argument("--device", default=None, help='Es. "cuda:0" o "cpu" (default: auto)')
     ap.add_argument("--no-track", action="store_true", help="Disattiva tracking (ID non persistenti)")
