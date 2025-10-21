@@ -4,8 +4,9 @@ import cv2
 import numpy as np
 
 CALIB_DIR       = 'camera_data'
-RECT_ANN_PATH   = './_annotations.coco.rectified.json'
-OUTPUT_3D_JSON  = './triangulated_3d_skeleton.json'
+#RECT_ANN_PATH   = './_annotations.coco.rectified.json'
+RECT_ANN_PATH   = './04_annotations_yolo.json'
+OUTPUT_3D_JSON  = './04_triangulated_yolo.json'
 
 # 1) Carica annotazioni
 with open(RECT_ANN_PATH, 'r') as f:
