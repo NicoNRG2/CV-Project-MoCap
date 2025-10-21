@@ -5,11 +5,7 @@
 Visualizza le etichette YOLO Pose (bbox, ID, keypoints, skeleton) sopra le immagini.
 
 Uso:
-  python visualize_pose_labels.py \
-    --images /path/alle/immagini \
-    --json /path/output_labels.json \
-    --outdir /path/out_annotated \
-    --show
+  python 04_test_labels.py --images ./images_rectified/cam_2 --json 04_labels2.json --outdir ./04_temp2
 
 Note:
 - Il JSON è quello prodotto dallo script di inferenza (campo "images" con "persons":[{id,score,bbox,keypoints}]).
