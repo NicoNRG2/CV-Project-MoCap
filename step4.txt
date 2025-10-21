@@ -6,3 +6,5 @@
 5) 04_merge_pose_json_to_rectified.py
 6) 02_triangulation.py
 7) 04_animate_yolo.py
+8) 04_adapt_mocap.py
+9) python .\03_step3compare.py --mocap .\04_adapted_final_mocap.json --triang .\04_triangulated_yolo.json --align similarity
