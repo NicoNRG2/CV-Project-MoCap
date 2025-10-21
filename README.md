@@ -15,7 +15,7 @@ Estimate the player's 3D poses using a **multiview camera setup** recorded at *S
 - Annotate **only the person wearing the black MoCap suit**.
 - Annotations were created using **Roboflow** and exported in **COCO JSON format**.
 
-![annotation_roboflow](video\annotation.png)
+![annotation_roboflow](video/annotation.png)
 
 ---
 
@@ -123,16 +123,23 @@ Removed 6 extra joints:
 ## 4. Human Pose Estimation
 
 For the human pose estimation step, we used the pre-trained YOLO v11 pose model.
-1) python 04_yolo_pose.py --images images_rectified/cam_13 --output 04_labels13.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20
-2) python 04_test_labels.py --images ./images_rectified/cam_13 --json 04_labels13.json --outdir ./04_temp13
-3) python .\04_test_labels_filtered.py (con parametri hardcoded giusti)
-4) python adapt_keypoint.py
-//abbiamo rinominato tutti gli id della persona giusta  a mano (tutti id=2)
-5) 04_merge_pose_json_to_rectified.py
-6) 02_triangulation.py
-7) 04_animate_yolo.py
-8) 04_adapt_mocap.py
-9) python .\03_step3compare.py --mocap .\04_adapted_final_mocap.json --triang .\04_triangulated_yolo.json --align similarity
+```bash
+python 04_yolo_pose.py --images images_rectified/cam_2 --output 04_labels2.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20
+python 04_yolo_pose.py --images images_rectified/cam_5 --output 04_labels5.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20
+python 04_yolo_pose.py --images images_rectified/cam_8 --output 04_labels8.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20
+python 04_yolo_pose.py --images images_rectified/cam_13 --output 04_labels13.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20
+
+(debug) python 04_test_labels.py --images ./images_rectified/cam_13 --json 04_labels13.json --outdir ./04_temp13
+
+python 04_test_labels_filtered.py # (con parametri hardcoded) per le 4 camere se ci sono più persone scegliere quale tenere tramite un id
+python 04_adapt_keypoint.py   # rimuove joint incompatibili con il mocap
+# abbiamo rinominato tutti gli id della persona a mano (tutti id=2)
+python 04_merge_pose_json_to_rectified.py
+python 02_triangulation.py # stesso script di triangolazione (passando annotazioni di yolo)
+(debug) python 04_animate_yolo.py  # crea gif
+python 04_adapt_mocap.py   # rimuove joint in più dal mocap
+python 03_step3compare.py --mocap 04_adapted_final_mocap.json --triang 04_triangulated_yolo.json --align similarity
+```
 
 ## Results
 <p align="center">
