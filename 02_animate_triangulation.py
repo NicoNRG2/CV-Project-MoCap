@@ -257,4 +257,4 @@ if __name__ == "__main__":
     main()
 
 #uso
-# python 02_animate_triangulation.py  --input triangulated_3d_skeleton.json --out 02_triangulated_skeleton.gif --fps 12
+# python 02_animate_triangulation.py --input triangulated_3d_skeleton.json --out 02_triangulated_skeleton.gif --fps 12

@@ -230,6 +230,4 @@ if __name__ == "__main__":
     main()
 
 # Uso:
-# python 04_animate_yolo.py --input 04_triangulated_yolo.json --out 04_yolo.gif --fps 12 --view 3d
-# Per nessuna rotazione:
-# python animate_keypoints_dots.py -i triangulated_3d_keypoints.json -o keypoints.gif --rotate-z 0
+# python 04_animate_yolo.py --input 04_triangulated_yolo.json --out 04_yolo.gif --fps 12

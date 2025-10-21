@@ -25,7 +25,7 @@ def pick_person(persons, target_id=None):
 def flatten_keypoints(kpts_xyz, conf_threshold=0.5):
     """
     Converte da [[x,y,conf], ...] a [x,y,v, x,y,v, ...] con v in {0,2}
-    v=2 se conf >= threshold, altrimenti v=0
+    v=2 se conf >= threshold, altrimenti v=1
     """
     flat = []
     for trip in kpts_xyz:
@@ -36,7 +36,7 @@ def flatten_keypoints(kpts_xyz, conf_threshold=0.5):
         x = float(trip[0])
         y = float(trip[1])
         c = float(trip[2]) if len(trip) >= 3 else 0.0
-        v = 2 if c >= conf_threshold else 0
+        v = 2 if c >= conf_threshold else 1
         flat.extend([x, y, v])
     return flat
 
@@ -115,4 +115,4 @@ if __name__ == "__main__":
         dedup=(not args.no_dedup),
     )
 
-#python 04_merge_pose_jsons_to_rectified.py 04_label2_filtered_adapted.json 04_label5_filtered_adapted.json 04_label8_filtered_adapted.json 04_label13_filtered_adapted.json -o 04_annotations_yolo.json --person-id 2 --conf-th 0
+# python 04_merge_pose_jsons_like_rectified.py 04_temp/labels2_filtered_adapted.json 04_temp/labels5_filtered_adapted.json 04_temp/labels8_filtered_adapted.json 04_temp/labels13_filtered_adapted.json --out 04_annotations_yolo.json
