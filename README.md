@@ -127,8 +127,9 @@ However, this step was skipped because the YOLO Pose skeleton structure is not c
 
 ## Results
 <p align="center">
-  <img src="02_triangulated_skeleton.gif" width="45%" />
-  <img src="03_mocap_skeleton.gif" width="45%" />
+  <img src="02_triangulated_skeleton.gif" width="30%" />
+  <img src="03_mocap_skeleton.gif" width="30%" />
+  <img src="04_yolo.gif" width="30%">
 </p>
 
 ### Triangulation vs MoCap (final accuracy):
