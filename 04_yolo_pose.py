@@ -5,12 +5,7 @@
 YOLOv11-Pose batch inferencer con export JSON e tracking semplice per mantenere lo stesso person ID tra frame.
 
 Uso:
-  python yolo11_pose_to_json.py \
-    --images /path/alla/cartella_immagini \
-    --output /path/output_labels.json \
-    --weights yolo11l-pose.pt \
-    --imgsz 1280 \
-    --conf 0.25
+  python 04_yolo_pose.py --images images_rectified/cam_2 --output 04_labels2.json --weights yolo11l-pose.pt --imgsz 1280 --conf 0.50
 
 Opzioni:
   --no-track      Disattiva il tracking per gli ID persistenti
