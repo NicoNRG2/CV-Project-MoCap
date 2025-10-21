@@ -15,7 +15,7 @@ Estimate the player's 3D poses using a **multiview camera setup** recorded at *S
 - Annotate **only the person wearing the black MoCap suit**.
 - Annotations were created using **Roboflow** and exported in **COCO JSON format**.
 
-> ✅ Step completed: all frames have been annotated and downloaded in COCO JSON format.
+![annotation_roboflow](video\annotation.png)
 
 ---
 
@@ -120,16 +120,24 @@ Removed 6 extra joints:
 'RHip', 'RKnee', 'RAnkle', 'RFoot'
 ```
 
-## 4. (Skipped) Human Pose Estimation
+## 4. Human Pose Estimation
 
-We planned to test a human pose estimation model (e.g., YOLO Pose), reprojecting its detections and comparing them with the MoCap ground truth.
-However, this step was skipped because the YOLO Pose skeleton structure is not compatible with the MoCap skeleton (only limbs are comparable).
+For the human pose estimation step, we used the pre-trained YOLO v11 pose model.
+1) python 04_yolo_pose.py --images images_rectified/cam_13 --output 04_labels13.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20
+2) python 04_test_labels.py --images ./images_rectified/cam_13 --json 04_labels13.json --outdir ./04_temp13
+3) python .\04_test_labels_filtered.py (con parametri hardcoded giusti)
+4) python adapt_keypoint.py
+//abbiamo rinominato tutti gli id della persona giusta  a mano (tutti id=2)
+5) 04_merge_pose_json_to_rectified.py
+6) 02_triangulation.py
+7) 04_animate_yolo.py
+8) 04_adapt_mocap.py
+9) python .\03_step3compare.py --mocap .\04_adapted_final_mocap.json --triang .\04_triangulated_yolo.json --align similarity
 
 ## Results
 <p align="center">
-  <img src="02_triangulated_skeleton.gif" width="30%" />
-  <img src="03_mocap_skeleton.gif" width="30%" />
-  <img src="04_yolo.gif" width="30%">
+  <img src="02_triangulated_skeleton.gif" width="45%" />
+  <img src="03_mocap_skeleton.gif" width="45%" />
 </p>
 
 ### Triangulation vs MoCap (final accuracy):
@@ -137,6 +145,15 @@ However, this step was skipped because the YOLO Pose skeleton structure is not c
 MPJPE 69.7 mm (mean), 69.8 mm (median)<br>
 MSE 5767.8 mm², RMSE 75.3 mm<br>
 Coherent 3D reconstruction with ~7–8 cm average joint error.
+
+<p align="center">
+  <img src="04_yolo.gif" width="45%" />
+  <img src="03_mocap_skeleton.gif" width="45%" />
+</p>
+
+### Yolo pose Triangulation vs MoCap:
+
+TODO
 
 ## 👥 Authors
 
