@@ -124,10 +124,10 @@ Removed 6 extra joints:
 
 For the human pose estimation step, we used the pre-trained YOLO v11 pose model.
 ```bash
-python 04_yolo_pose.py --images images_rectified/cam_2 --output 04_temp/labels2.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20
-python 04_yolo_pose.py --images images_rectified/cam_5 --output 04_temp/labels5.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20
-python 04_yolo_pose.py --images images_rectified/cam_8 --output 04_temp/labels8.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20
-python 04_yolo_pose.py --images images_rectified/cam_13 --output 04_temp/labels13.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20
+python 04_yolo_pose.py --images images_rectified/cam_2 --output 04_temp/labels2.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
+python 04_yolo_pose.py --images images_rectified/cam_5 --output 04_temp/labels5.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
+python 04_yolo_pose.py --images images_rectified/cam_8 --output 04_temp/labels8.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
+python 04_yolo_pose.py --images images_rectified/cam_13 --output 04_temp/labels13.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
 
 (debug) python 04_test_labels.py --images images_rectified/cam_2 --json 04_temp/labels2.json --outdir 04_temp/cam2
 (debug) python 04_test_labels.py --images images_rectified/cam_5 --json 04_temp/labels5.json --outdir 04_temp/cam5
