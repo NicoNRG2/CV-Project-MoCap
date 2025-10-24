@@ -1,0 +1,7 @@
+# Ignora cartelle di cache
+__pycache__/
+*.pyc
+
+# Ignora una cartella intera
+temp/
+train/
