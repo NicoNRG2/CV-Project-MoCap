@@ -6,20 +6,13 @@ Subcampiona un file JSON di motion capture partendo da frame_980
 e poi prendendo un frame ogni 8.3 frame usando un accumulatore decimale.
 
 Uso:
-  python subsample_mocap.py -i dati_tuta_filtrati.json -o dati_tuta_8p3.json --start 980 --step 8.3
+  python 03_subsample_mocap.py
 """
 
-import argparse
 import json
 from decimal import Decimal, getcontext
+from pathlib import Path
 
-def parse_args():
-    p = argparse.ArgumentParser(description="Subcampionamento con accumulatore decimale.")
-    p.add_argument("-i", "--input",  required=True, help="Percorso del file JSON in input.")
-    p.add_argument("-o", "--output", required=True, help="Percorso del file JSON in output.")
-    p.add_argument("--start", type=int, default=980, help="Frame di partenza (default: 980).")
-    p.add_argument("--step",  type=str, default="8.3", help="Passo in frame, decimale (default: '8.3').")
-    return p.parse_args()
 
 def load_frames(path):
     with open(path, "r", encoding="utf-8") as f:
@@ -28,9 +21,9 @@ def load_frames(path):
     idx = sorted(int(k.split("_")[1]) for k in data.keys())
     return data, idx
 
+
 def next_existing_index(sorted_indices, target):
     """Ritorna il primo indice in sorted_indices >= target, oppure None se non esiste."""
-    # Ricerca binaria semplice
     lo, hi = 0, len(sorted_indices)
     while lo < hi:
         mid = (lo + hi) // 2
@@ -39,6 +32,7 @@ def next_existing_index(sorted_indices, target):
         else:
             hi = mid
     return sorted_indices[lo] if lo < len(sorted_indices) else None
+
 
 def subsample_indices(sorted_indices, start_index, step_decimal):
     """
@@ -54,7 +48,6 @@ def subsample_indices(sorted_indices, start_index, step_decimal):
     if not sorted_indices:
         return selected
 
-    # Se il frame di start non esiste, usa il primo disponibile >= start
     start_real = next_existing_index(sorted_indices, start_index)
     if start_real is None:
         return selected
@@ -80,8 +73,8 @@ def subsample_indices(sorted_indices, start_index, step_decimal):
 
     return selected
 
+
 def build_output(original_data, selected_indices):
-    # Mantiene l'ordine crescente dei frame
     out = {}
     for i in selected_indices:
         key = f"frame_{i}"
@@ -89,24 +82,32 @@ def build_output(original_data, selected_indices):
             out[key] = original_data[key]
     return out
 
+
 def main():
-    args = parse_args()
+    # 🔧 Parametri hardcoded
+    input_path = "temp/03_temp/03_selected_keypoints_adapted_joints.json"
+    output_path = "temp/03_temp/03_selected_keypoints_adapted_joints_48frames.json"
+    start = 980
+    step = "8.3"
 
-    # precisione sufficiente per accumulare molti step senza drift
-    getcontext().prec = 28
+    getcontext().prec = 28  # alta precisione
 
-    data, indices = load_frames(args.input)
-    selected_indices = subsample_indices(indices, args.start, args.step)
+    data, indices = load_frames(input_path)
+    selected_indices = subsample_indices(indices, start, step)
     out = build_output(data, selected_indices)
 
-    with open(args.output, "w", encoding="utf-8") as f:
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
 
-    print(f"Frames totali: {len(indices)} | Selezionati: {len(selected_indices)}")
-    print(f"Primo: frame_{selected_indices[0]} | Ultimo: frame_{selected_indices[-1]}")
+    print(f"✅ Frames totali: {len(indices)} | Selezionati: {len(selected_indices)}")
+    print(f"   Primo frame: frame_{selected_indices[0]}")
+    print(f"   Ultimo frame: frame_{selected_indices[-1]}")
+    print(f"💾 Salvato in: {output_path}")
+
 
 if __name__ == "__main__":
     main()
 
 
-# python 03_subsample_mocap.py -i selected_keypoints_adapted_joints.json -o selected_keypoints_adapted_joints_48frames.json --start 980 --step 8.3
+# python 03_subsample_mocap.py

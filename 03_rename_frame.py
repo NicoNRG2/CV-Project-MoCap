@@ -1,8 +1,8 @@
 import json
 
 # Read the JSON file
-input_file = "selected_keypoints_adapted_joints_48frames.json"
-output_file = "final_mocap.json"
+input_file = "temp/03_temp/03_selected_keypoints_adapted_joints_48frames.json"
+output_file = "temp/03_temp/03_final_mocap.json"
 
 # Load JSON data
 with open(input_file, 'r') as f:

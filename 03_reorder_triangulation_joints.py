@@ -52,12 +52,12 @@ def reorder_file(input_path: Path, output_path: Path):
 
 def main():
     parser = argparse.ArgumentParser(description="Riordina i joint nei frame di un file JSON.")
-    parser.add_argument("input_json", type=Path, help="File JSON di input")
-    parser.add_argument("output_json", type=Path, help="File JSON di output")
+    parser.add_argument("--input_json", default="temp/02_temp/02_triangulated_3d_skeleton.json", type=Path, help="File JSON di input")
+    parser.add_argument("--output_json", default="temp/03_temp/03_final_triangulation.json", type=Path, help="File JSON di output")
     args = parser.parse_args()
     reorder_file(args.input_json, args.output_json)
 
 if __name__ == "__main__":
     main()
 
-# python reorder_triangulation_joints.py triangulated_3d_skeleton.json output.json
+# python reorder_triangulation_joints.py 

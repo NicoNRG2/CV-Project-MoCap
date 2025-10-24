@@ -113,12 +113,12 @@ def compute_errors(A: np.ndarray, B: np.ndarray) -> Dict[str, float]:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mocap", required=True, help="Path al JSON MoCap (frames al top-level).")
-    ap.add_argument("--triang", required=True, help="Path al JSON triangolazione.")
+    ap.add_argument("--mocap", default="temp/03_temp/03_final_mocap.json" , help="Path al JSON MoCap (frames al top-level).")
+    ap.add_argument("--triang", default="temp/03_temp/03_final_triangulation.json", help="Path al JSON triangolazione.")
     ap.add_argument("--triang-key", default=None, help="(Opzionale) Chiave che contiene i frame nel JSON triangolazione.")
     ap.add_argument("--out", default="out_compare", help="(Ignorato) Cartella output: non si salvano CSV.")
     ap.add_argument("--per-frame-csv", action="store_true", help="(Ignorato) Niente CSV per frame viene scritto.")
-    ap.add_argument("--align", choices=["none", "rigid", "similarity"], default="none",
+    ap.add_argument("--align", default="similarity", choices=["none", "rigid", "similarity"],
                    help="Allineamento: none, rigid (Kabsch), similarity (rot+trasl+scala).")
     args = ap.parse_args()
 
@@ -180,4 +180,4 @@ if __name__ == "__main__":
     main()
 
 # Esempio:
-# python 03_step3compare.py --mocap final_mocap.json --triang final_triangulation.json --align similarity
+# python 03_step3compare.py
