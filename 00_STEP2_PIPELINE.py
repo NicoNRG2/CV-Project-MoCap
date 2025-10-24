@@ -27,7 +27,7 @@ def run_command(cmd):
         print(f"✅ Completato: {cmd}")
 
 def main():
-    print("=== Starting Motion Capture Pipeline ===")
+    print("=== STEP 2: Starting Motion Capture Pipeline ===")
     for cmd in commands:
         run_command(cmd)
     print("\n🎉 Tutti gli script sono stati eseguiti con successo!")

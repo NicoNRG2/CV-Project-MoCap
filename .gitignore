@@ -5,3 +5,5 @@ __pycache__/
 # Ignora una cartella intera
 temp/
 train/
+images_rectified/
+rectified_videos/
