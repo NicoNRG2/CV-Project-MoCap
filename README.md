@@ -5,6 +5,16 @@
 Estimate the player's 3D poses using a **multiview camera setup** recorded at *Sanbàpolis*, and evaluate the accuracy of the triangulated 3D skeletons by comparing them with **motion capture (MoCap)** data.
 
 ---
+## ⚙️ Requirements 
+Python version:
+```bash
+python 3.13
+```
+Run this command to install the required libraries:
+```bash
+pip install -r requirements.txt
+```
+---
 
 ## 📋 Project Steps
 
@@ -129,10 +139,10 @@ python 04_yolo_pose.py --images images_rectified/cam_5 --output 04_temp/labels5.
 python 04_yolo_pose.py --images images_rectified/cam_8 --output 04_temp/labels8.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
 python 04_yolo_pose.py --images images_rectified/cam_13 --output 04_temp/labels13.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
 
-(debug) python 04_test_labels.py --images images_rectified/cam_2 --json 04_temp/labels2.json --outdir 04_temp/cam2
-(debug) python 04_test_labels.py --images images_rectified/cam_5 --json 04_temp/labels5.json --outdir 04_temp/cam5
-(debug) python 04_test_labels.py --images images_rectified/cam_8 --json 04_temp/labels8.json --outdir 04_temp/cam8
-(debug) python 04_test_labels.py --images images_rectified/cam_13 --json 04_temp/labels13.json --outdir 04_temp/cam13
+python 04_test_labels.py --images images_rectified/cam_2 --json 04_temp/labels2.json --outdir 04_temp/cam2
+python 04_test_labels.py --images images_rectified/cam_5 --json 04_temp/labels5.json --outdir 04_temp/cam5
+python 04_test_labels.py --images images_rectified/cam_8 --json 04_temp/labels8.json --outdir 04_temp/cam8
+python 04_test_labels.py --images images_rectified/cam_13 --json 04_temp/labels13.json --outdir 04_temp/cam13
 
 # controllo visivo dell'id del giocatore di basket per le 4 camere
 
@@ -179,11 +189,8 @@ MPJPE 68.9 mm (mean), 66.1 mm (median)<br>
 MSE 5947.1 mm², RMSE 75.3 mm<br>
 Coherent 3D reconstruction with ~7–8 cm average joint error.
 
-# requisiti TODO
-pip install pandas ultralytics tqdm
-
 ## 👥 Authors
 
 ### Group members:
-Nicola Cappellaro
-Riccardo Zannoni
+Nicola Cappellaro - nicola.cappellaro@studenti.unitn.it  
+Riccardo Zannoni  - riccardo.zannoni@studenti.unitn.it
