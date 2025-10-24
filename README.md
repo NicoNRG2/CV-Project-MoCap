@@ -8,7 +8,7 @@ Estimate the player's 3D poses using a **multiview camera setup** recorded at *S
 ## ⚙️ Requirements 
 Python version:
 ```bash
-python 3.13
+python 3.12 or later
 ```
 Run this command to install the required libraries:
 ```bash
@@ -51,10 +51,11 @@ Using the 2D keypoints annotated from the multiview cameras, we reconstruct the 
 
 #### Executed scripts
 ```bash
-python 01_rectified_videos.py
-python 01_rectified_images.py
-python 01_rectified_annotations.py
-python 01_draw_keypoint_over_frame_check.py
+curl -L "https://app.roboflow.com/ds/fFEVpEaLNe?key=gZjXq6fQYi" > roboflow.zip; unzip roboflow.zip; rm roboflow.zip 
+python 02_rectified_videos.py
+python 02_rectified_images.py
+python 02_rectified_annotations.py
+python 02_draw_keypoint_over_frame_check.py
 
 python 02_triangulation.py --input _annotations.coco.rectified.json --output triangulated_3d_skeleton.json # TODO(testare se va) 
 python 02_plot_3d_skeleton.py [frame_number]
