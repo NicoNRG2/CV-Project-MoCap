@@ -2,7 +2,7 @@ import json
 import sys
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.lines as mlines  # 👈 serve per creare il pallino rosso nella legenda
+import matplotlib.lines as mlines  #  serve per creare il pallino rosso nella legenda
 
 # Definizioni statiche
 KEYPOINTS = [
@@ -66,12 +66,15 @@ def plot_frame(frame_number, json_path="temp/02_temp/02_triangulated_3d_skeleton
     ax.set_box_aspect([1, 1, 2])  # Aspect ratio
     plt.title(f"Scheletro 3D — {key}")
 
-    # ✅ Legenda con pallino rosso
+    #  Legenda con pallino rosso
     red_dot = mlines.Line2D([], [], color='r', marker='o', linestyle='None',
                             markersize=8, label='Head (rosso)')
     plt.legend(handles=[red_dot])
 
     plt.show()
+    plt.savefig("temp/02_temp/02_skeleton.png")
+    
+    
 
 
 if __name__ == "__main__":

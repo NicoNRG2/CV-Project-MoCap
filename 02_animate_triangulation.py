@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from math import cos, sin, radians
 from matplotlib.animation import FuncAnimation, FFMpegWriter, PillowWriter
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+import sys, os, subprocess  # <--- NEW
 
 # Joint names nell'ordine fornito
 JOINTS = [
@@ -123,6 +124,20 @@ def project_points(p, view):
     raise ValueError("view non valida")
 
 
+def _open_in_os(path: Path):
+    """Apre il file con l'app predefinita del sistema (Windows/Mac/Linux)."""
+    p = Path(path).resolve()
+    try:
+        if sys.platform.startswith("win"):
+            os.startfile(str(p))  # type: ignore[attr-defined]
+        elif sys.platform == "darwin":
+            subprocess.run(["open", str(p)], check=False)
+        else:
+            subprocess.run(["xdg-open", str(p)], check=False)
+    except Exception as e:
+        print(f"[WARN] Impossibile aprire automaticamente il file: {e}")
+
+
 def animate(frames, fps, out, view, downsample, max_frames, point_size):
     frames = frames[::max(1, downsample)]
     if max_frames and max_frames > 0:
@@ -191,6 +206,7 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
 
     out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
+    saved_path = out
     if out.suffix.lower() == ".mp4":
         try:
             writer = FFMpegWriter(fps=int(fps / max(1, downsample)), bitrate=3000)
@@ -203,6 +219,7 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
                 writer=PillowWriter(fps=int(fps / max(1, downsample))),
                 dpi=120,
             )
+            saved_path = out
     elif out.suffix.lower() == ".gif":
         anim.save(
             str(out),
@@ -216,8 +233,10 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
             writer=PillowWriter(fps=int(fps / max(1, downsample))),
             dpi=120,
         )
+        saved_path = out
 
-    print(f"[OK] Salvato: {out}")
+    print(f"[OK] Salvato: {saved_path}")
+    return Path(saved_path)  # <--- NEW: ritorno il percorso finale
 
 
 def main():
@@ -238,11 +257,13 @@ def main():
         help="Vista 3D o proiezione 2D"
     )
     ap.add_argument("--point-size", type=float, default=20.0, help="Dimensione marker giunti")
+    ap.add_argument("--no-open", action="store_true",
+                    help="Non aprire automaticamente il file generato")  # <--- NEW
     args = ap.parse_args()
 
     frames = load_frames(args.input)
     frames = rotate_frames_z(frames)  # <--- rotazione fissa -90° attorno a Z per allinearlo con mocap animation
-    animate(
+    saved_path = animate(
         frames=frames,
         fps=args.fps,
         out=args.out,
@@ -252,9 +273,14 @@ def main():
         point_size=args.point_size,
     )
 
+    # Apertura automatica del file generato
+    if not args.no_open:
+        _open_in_os(saved_path)
+
 
 if __name__ == "__main__":
     main()
 
-#uso
+# uso
 # python 02_animate_triangulation.py --input triangulated_3d_skeleton.json --out 02_triangulated_skeleton.gif --fps 12
+# aggiungi --no-open se NON vuoi l'apertura automatica

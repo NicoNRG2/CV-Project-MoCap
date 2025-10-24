@@ -34,9 +34,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Confronta keypoints rettificati vs riproiettati per una stessa image_id")
     parser.add_argument("image_id", type=int, help="ID dell'immagine da plottare")
-    parser.add_argument("--rectified", default="_annotations.coco.rectified.json",
+    parser.add_argument("--rectified", default="temp/02_temp/02_annotations.coco.rectified.json",
                         help="Path al file COCO rettificato")
-    parser.add_argument("--reproj", default="reprojected_annotations.json",
+    parser.add_argument("--reproj", default="temp/02_temp/02_reprojected_annotations.json",
                         help="Path al file COCO con keypoints riproiettati")
     args = parser.parse_args()
 

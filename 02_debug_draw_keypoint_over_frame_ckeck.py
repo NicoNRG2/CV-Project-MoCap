@@ -78,17 +78,17 @@ def main():
         img = draw_keypoints_on_image(img, ann, skeleton)
 
     # show or save
-    if args.output:
-        cv2.imwrite(args.output, img)
-        print(f"Annotated image saved to {args.output}")
-    else:
-        cv2.imshow('Keypoints', img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+   
+    cv2.imwrite(args.output, img)
+    print(f"Annotated image saved to {args.output}")
+  
+    scale = 0.3  # 50% della dimensione originale
+    resized = cv2.resize(img, None, fx=scale, fy=scale)
+    cv2.imshow('Keypoints', resized)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main()
 
 # uso:
-# python .\01_debug_draw_keypoint_over_frame_ckeck.py --image images\out2_frame_0019_png.rf.aa99af7677dc057dc1f577a91cafef39.jpg --annotations .\_annotations.coco.json --image_id 48 --output 01_debug_draw_normale.png
-# python .\01_debug_draw_keypoint_over_frame_ckeck.py --image .\images_rectified\out2_frame_0019_png.rf.aa99af7677dc057dc1f577a91cafef39.jpg --annotations .\_annotations.coco.rectified.json --image_id 48 --output 01_debug_draw_ret.png
