@@ -101,8 +101,8 @@ def rectify_annotations(coco_json_path, output_json_path):
 
 def main():
     # adjust paths if needed
-    input_json = '_annotations.coco.json'
-    output_json = './_annotations.coco.rectified.json'
+    input_json = 'train/_annotations.coco.json'
+    output_json = 'temp/02_temp/02_annotations.coco.rectified.json'
     print(f"Loading annotations from {input_json}...")
     rectify_annotations(input_json, output_json)
     print(f"Rectified annotations saved to {output_json}")

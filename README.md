@@ -51,17 +51,18 @@ Using the 2D keypoints annotated from the multiview cameras, we reconstruct the 
 
 #### Executed scripts
 ```bash
-curl -L "https://app.roboflow.com/ds/fFEVpEaLNe?key=gZjXq6fQYi" > roboflow.zip; unzip roboflow.zip; rm roboflow.zip 
+python 02_download_roboflow.py
 python 02_rectified_videos.py
 python 02_rectified_images.py
 python 02_rectified_annotations.py
-python 02_draw_keypoint_over_frame_check.py
+(debug) python 02_debug_draw_keypoint_over_frame_ckeck.py --image train/out2_frame_0019_png.rf.aa99af7677dc057dc1f577a91cafef39.jpg --annotations train/_annotations.coco.json --image_id 48 --output temp/02_temp/02_debug_draw_normale.png
+(debug) python 02_debug_draw_keypoint_over_frame_ckeck.py --image images_rectified/out2_frame_0019_png.rf.aa99af7677dc057dc1f577a91cafef39.jpg --annotations temp/02_temp/02_annotations.coco.rectified.json --image_id 48 --output temp/02_temp/02_debug_draw_ret.png
 
-python 02_triangulation.py --input _annotations.coco.rectified.json --output triangulated_3d_skeleton.json # TODO(testare se va) 
+python 02_triangulation.py --input temp/02_temp/02_annotations.coco.rectified.json --output temp/02_temp/02_triangulated_3d_skeleton.json
 python 02_plot_3d_skeleton.py [frame_number]
 python 02_generate_reprojected_annotations.py
 python 02_compute_reprojection_error.py
-python 02_animate_triangulation.py  --input triangulated_3d_skeleton.json --out 02_triangulated_skeleton.gif --fps 12
+python 02_animate_triangulation.py  --input temp/02_temp/02_triangulated_3d_skeleton.json --out 02_triangulated_skeleton.gif --fps 12
 ```
 ### 3. Alignment with Motion Capture Data
 

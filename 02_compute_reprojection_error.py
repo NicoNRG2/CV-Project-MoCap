@@ -9,8 +9,8 @@ import numpy as np
 from collections import defaultdict
 
 # === CONFIGURAZIONE ===
-gt_file   = "_annotations.coco.rectified.json"   # ground truth
-pred_file = "reprojected_annotations.json"       # riproiezioni
+gt_file   = "temp/02_temp/02_annotations.coco.rectified.json"   # ground truth
+pred_file = "temp/02_temp/02_reprojected_annotations.json"       # riproiezioni
 
 # === FUNZIONI ===
 def load_keypoints_map(coco_json):

@@ -14,9 +14,9 @@ import cv2
 # === CONFIGURAZIONE ===
 CALIB_BASE_DIR      = "camera_data"                    # cartella contenente cam_2, cam_5, ...
 CAMERA_IDS          = [2,5,8,13]                       # ID delle 4 telecamere
-RECTIFIED_JSON_PATH = "_annotations.coco.rectified.json"
-SKELETON3D_PATH     = "triangulated_3d_skeleton.json"
-OUTPUT_JSON_PATH    = "reprojected_annotations.json"
+RECTIFIED_JSON_PATH = "temp/02_temp/02_annotations.coco.rectified.json"
+SKELETON3D_PATH     = "temp/02_temp/02_triangulated_3d_skeleton.json"
+OUTPUT_JSON_PATH    = "temp/02_temp/02_reprojected_annotations.json"
 
 # === FUNZIONI UTILI ===
 

@@ -87,7 +87,7 @@ def rectify_image(image_path, output_path, cam_idx, calib_path):
 # Main: batch su cartella images
 # =========================
 def main():
-    input_dir = "images"
+    input_dir = "train"
     output_dir = "images_rectified"
     os.makedirs(output_dir, exist_ok=True)
 

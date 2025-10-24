@@ -1,10 +1,8 @@
-"""
-DISEGNA LO SCHELETRO 3D PER UN DATO FRAME"""
-
 import json
 import sys
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.lines as mlines  # 👈 serve per creare il pallino rosso nella legenda
 
 # Definizioni statiche
 KEYPOINTS = [
@@ -23,15 +21,10 @@ SKELETON = [
     (11, 16), (16, 17), (17, 18)
 ]
 
-def plot_frame(frame_number, json_path="triangulated_3d_skeleton.json"):
+def plot_frame(frame_number, json_path="temp/02_temp/02_triangulated_3d_skeleton.json"):
     """
     Plot 3D skeleton for a given frame.
-
-    Args:
-      frame_number: int or str, e.g. 1, "1", "0001" → frame_0001
-      json_path: path to the JSON file
     """
-    # Carica il JSON
     try:
         with open(json_path, 'r') as f:
             data = json.load(f)
@@ -61,7 +54,7 @@ def plot_frame(frame_number, json_path="triangulated_3d_skeleton.json"):
     head_idx = KEYPOINTS.index("Head")
     for i, (x, y, z) in enumerate(points):
         c = 'r' if i == head_idx else 'b'
-        s = 60  if i == head_idx else 20
+        s = 60 if i == head_idx else 20
         ax.scatter(x, y, z, c=c, s=s)
 
     # Connessioni scheletro
@@ -70,16 +63,17 @@ def plot_frame(frame_number, json_path="triangulated_3d_skeleton.json"):
         ax.plot([xs[i], xs[j]], [ys[i], ys[j]], [zs[i], zs[j]], c='k')
 
     ax.set_xlabel('X'); ax.set_ylabel('Y'); ax.set_zlabel('Z')
-
-    #scale x2 z-axis
     ax.set_box_aspect([1, 1, 2])  # Aspect ratio
-
     plt.title(f"Scheletro 3D — {key}")
-    plt.legend(['Head (rosso)'])
+
+    # ✅ Legenda con pallino rosso
+    red_dot = mlines.Line2D([], [], color='r', marker='o', linestyle='None',
+                            markersize=8, label='Head (rosso)')
+    plt.legend(handles=[red_dot])
+
     plt.show()
 
 
 if __name__ == "__main__":
-    # Passa il frame da linea di comando, es. `python plot_skeleton.py 6`
     frame_arg = sys.argv[1] if len(sys.argv) > 1 else "1"
     plot_frame(frame_arg)
