@@ -1,5 +1,5 @@
 """ 
-DISEGNA KEYPOINT E SCHEELTRO DATO UN FRAME IN 2D"""
+DISEGNA KEYPOINT E SCHELTRO DATO UN FRAME IN 2D"""
 
 import cv2
 import json
@@ -92,3 +92,5 @@ if __name__ == '__main__':
     main()
 
 # uso:
+# python 02_debug_draw_keypoint_over_frame_ckeck.py --image train/out2_frame_0019_png.rf.aa99af7677dc057dc1f577a91cafef39.jpg --annotations train/_annotations.coco.json --image_id 48 --output temp/02_temp/02_debug_draw_normale.png
+

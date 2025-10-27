@@ -20,9 +20,7 @@ pip install -r requirements.txt
 
 ### 1. Annotate Player’s Poses
 - Each action is captured by **4 synchronized camera views** (`cam_2`, `cam_5`, `cam_8`, `cam_13`).
-- One action per group of 2 people.
-- Around **100 frames per person**.
-- Annotate **only the person wearing the black MoCap suit**.
+-  **only the person wearing the black MoCap suit** were annotated.
 - Annotations were created using **Roboflow** and exported in **COCO JSON format**.
 
 ![annotation_roboflow](video/annotation.png)
@@ -62,7 +60,7 @@ python 02_plot_3d_skeleton.py 1
 python 02_generate_reprojected_annotations.py
 python 02_compute_reprojection_error.py
 python 02_debug_plot_2D_compare_keypoints.py 10
-python 02_animate_triangulation.py  --input temp/02_temp/02_triangulated_3d_skeleton.json --out 02_triangulated_skeleton.gif --fps 12
+python 02_animate_triangulation.py  --input temp/02_temp/02_triangulated_3d_skeleton.json --out temp/02_temp/02_triangulated_skeleton.gif --fps 12
 ```
 ### 3. Alignment with Motion Capture Data
 
@@ -139,22 +137,24 @@ Removed 6 extra joints:
 
 For the human pose estimation step, we used the pre-trained YOLO v11 pose model.
 ```bash
-python 04_yolo_pose.py --images images_rectified/cam_2 --output 04_temp/labels2.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
-python 04_yolo_pose.py --images images_rectified/cam_5 --output 04_temp/labels5.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
-python 04_yolo_pose.py --images images_rectified/cam_8 --output 04_temp/labels8.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
-python 04_yolo_pose.py --images images_rectified/cam_13 --output 04_temp/labels13.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
 
-python 04_test_labels.py --images images_rectified/cam_2 --json 04_temp/labels2.json --outdir 04_temp/cam2
-python 04_test_labels.py --images images_rectified/cam_5 --json 04_temp/labels5.json --outdir 04_temp/cam5
-python 04_test_labels.py --images images_rectified/cam_8 --json 04_temp/labels8.json --outdir 04_temp/cam8
-python 04_test_labels.py --images images_rectified/cam_13 --json 04_temp/labels13.json --outdir 04_temp/cam13
+python 04_divide_images.py
+python 04_yolo_pose.py --images images_rectified/cam_2 --output temp/04_temp/labels2.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
+python 04_yolo_pose.py --images images_rectified/cam_5 --output temp/04_temp/labels5.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
+python 04_yolo_pose.py --images images_rectified/cam_8 --output temp/04_temp/labels8.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
+python 04_yolo_pose.py --images images_rectified/cam_13 --output temp/04_temp/labels13.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
+
+python 04_test_labels.py --images images_rectified/cam_2 --json temp/04_temp/labels2.json --outdir temp/04_temp/cam2
+python 04_test_labels.py --images images_rectified/cam_5 --json temp/04_temp/labels5.json --outdir temp/04_temp/cam5
+python 04_test_labels.py --images images_rectified/cam_8 --json temp/04_temp/labels8.json --outdir temp/04_temp/cam8
+python 04_test_labels.py --images images_rectified/cam_13 --json temp/04_temp/labels13.json --outdir temp/04_temp/cam13
 
 # controllo visivo dell'id del giocatore di basket per le 4 camere
 
-python 04_remove_multiple_people.py --input 04_temp/labels2.json --output 04_temp/labels2_filtered.json --keep_id 1
-python 04_remove_multiple_people.py --input 04_temp/labels5.json --output 04_temp/labels5_filtered.json --keep_id 2
-python 04_remove_multiple_people.py --input 04_temp/labels8.json --output 04_temp/labels8_filtered.json --keep_id 1
-python 04_remove_multiple_people.py --input 04_temp/labels13.json --output 04_temp/labels13_filtered.json --keep_id 1
+python 04_remove_multiple_people.py --input temp/04_temp/labels2.json --output temp/04_temp/labels2_filtered.json --keep_id 1
+python 04_remove_multiple_people.py --input temp/04_temp/labels5.json --output temp/04_temp/labels5_filtered.json --keep_id 2
+python 04_remove_multiple_people.py --input temp/04_temp/labels8.json --output temp/04_temp/labels8_filtered.json --keep_id 1
+python 04_remove_multiple_people.py --input temp/04_temp/labels13.json --output temp/04_temp/labels13_filtered.json --keep_id 1
 
 # remove incompatible joints
 python 04_adapt_keypoint.py 2
@@ -162,20 +162,16 @@ python 04_adapt_keypoint.py 5
 python 04_adapt_keypoint.py 8
 python 04_adapt_keypoint.py 13
 
-python 04_merge_pose_jsons_like_rectified.py 04_temp/labels2_filtered_adapted.json 04_temp/labels5_filtered_adapted.json 04_temp/labels8_filtered_adapted.json 04_temp/labels13_filtered_adapted.json --out 04_temp/annotations_yolo.json
+python 04_merge_pose_jsons_like_rectified.py temp/04_temp/labels2_filtered_adapted.json temp/04_temp/labels5_filtered_adapted.json temp/04_temp/labels8_filtered_adapted.json temp/04_temp/labels13_filtered_adapted.json --out temp/04_temp/annotations_yolo.json
 
-python 02_triangulation.py --input 04_temp/annotations_yolo.json --output 04_triangulated_yolo.json
+python 02_triangulation.py --input temp/04_temp/annotations_yolo.json --output temp/04_temp/04_triangulated_yolo.json
 
-python 04_animate_yolo.py --input 04_triangulated_yolo.json --out 04_yolo.gif --fps 12
+python 04_animate_yolo.py --input temp/04_temp/04_triangulated_yolo.json --out temp/04_temp/04_yolo.gif --fps 12
 python 04_adapt_mocap.py   # rimuove joint in più dal mocap
-python 03_step3compare.py --mocap 04_adapted_final_mocap.json --triang 04_triangulated_yolo.json --align similarity
+python 03_step3compare.py --mocap temp/04_temp/04_adapted_final_mocap.json --triang temp/04_temp/04_triangulated_yolo.json --align similarity
 ```
 
 ## Results
-<p align="center">
-  <img src="02_triangulated_skeleton.gif" width="45%" />
-  <img src="03_mocap_skeleton.gif" width="45%" />
-</p>
 
 ### Triangulation vs MoCap (final accuracy):
 
@@ -184,8 +180,8 @@ MSE 5767.8 mm², RMSE 75.3 mm<br>
 Coherent 3D reconstruction with ~7–8 cm average joint error.
 
 <p align="center">
-  <img src="04_yolo.gif" width="45%" />
-  <img src="03_mocap_skeleton.gif" width="45%" />
+  <img src="gif_results\03_final_triangulation.gif" width="45%" />
+  <img src="gif_results\03_final_mocap.gif" width="45%" />
 </p>
 
 ### Yolo pose Triangulation vs MoCap:
@@ -194,8 +190,14 @@ MPJPE 68.9 mm (mean), 66.1 mm (median)<br>
 MSE 5947.1 mm², RMSE 75.3 mm<br>
 Coherent 3D reconstruction with ~7–8 cm average joint error.
 
+<p align="center">
+  <img src="gif_results\04_yolo.gif" width="45%" />
+  <img src="gif_results\03_final_mocap.gif" width="45%" />
+</p>
+
+
+
 ## 👥 Authors
 
-### Group members:
 Nicola Cappellaro - nicola.cappellaro@studenti.unitn.it  
 Riccardo Zannoni  - riccardo.zannoni@studenti.unitn.it

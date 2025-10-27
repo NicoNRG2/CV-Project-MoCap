@@ -10,6 +10,12 @@ from math import cos, sin, radians
 from matplotlib.animation import FuncAnimation, FFMpegWriter, PillowWriter
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 
+# NEW: imports per apertura file
+import os
+import sys
+import platform
+import subprocess
+
 # --- JOINTS (13) nell'ordine richiesto ---
 JOINTS = [
     "Nose",
@@ -115,6 +121,35 @@ def project_points(p, view):
     raise ValueError("view non valida")
 
 
+# NEW: apertura con app di default (Windows/macOS/Linux/WSL)
+def open_with_default_app(path: Path):
+    try:
+        p = str(path)
+        sysname = platform.system().lower()
+        release = platform.uname().release.lower()
+
+        # WSL detection
+        is_wsl = ("microsoft" in release) or ("wsl" in release)
+
+        if is_wsl:
+            # wslview apre con l'app di Windows se disponibile
+            ret = subprocess.run(["wslview", p], check=False)
+            if ret.returncode == 0:
+                return
+            # fallback a xdg-open
+            subprocess.run(["xdg-open", p], check=False)
+            return
+
+        if sysname == "windows":
+            os.startfile(p)  # type: ignore[attr-defined]
+        elif sysname == "darwin":  # macOS
+            subprocess.run(["open", p], check=False)
+        else:  # Linux/Unix
+            subprocess.run(["xdg-open", p], check=False)
+    except Exception as e:
+        print(f"[INFO] Impossibile aprire automaticamente il file: {e}")
+
+
 def animate(frames, fps, out, view, downsample, max_frames, point_size):
     frames = frames[::max(1, downsample)]
     if max_frames and max_frames > 0:
@@ -126,7 +161,7 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
 
     fig = plt.figure(figsize=(7, 7))
     ax = make_axes(fig, view, (mins, maxs))
-    ax.set_title("Triangulated Keypoints (dots only)")
+    ax.set_title("Triangulated Keypoints (YOLO)")
 
     # Inizializzazione solo punti
     p0 = frames[0]
@@ -159,33 +194,39 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
 
     out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    if out.suffix.lower() == ".mp4":
-        try:
-            writer = FFMpegWriter(fps=int(fps / max(1, downsample)), bitrate=3000)
-            anim.save(str(out), writer=writer, dpi=120)
-        except Exception as e:
-            print(f"[INFO] MP4 fallito ({e}). Salvo GIF…")
+    try:
+        if out.suffix.lower() == ".mp4":
+            try:
+                writer = FFMpegWriter(fps=int(fps / max(1, downsample)), bitrate=3000)
+                anim.save(str(out), writer=writer, dpi=120)
+            except Exception as e:
+                print(f"[INFO] MP4 fallito ({e}). Salvo GIF…")
+                out = out.with_suffix(".gif")
+                anim.save(
+                    str(out),
+                    writer=PillowWriter(fps=int(fps / max(1, downsample))),
+                    dpi=120,
+                )
+        elif out.suffix.lower() == ".gif":
+            anim.save(
+                str(out),
+                writer=PillowWriter(fps=int(fps / max(1, downsample))),
+                dpi=120,
+            )
+        else:
             out = out.with_suffix(".gif")
             anim.save(
                 str(out),
                 writer=PillowWriter(fps=int(fps / max(1, downsample))),
                 dpi=120,
             )
-    elif out.suffix.lower() == ".gif":
-        anim.save(
-            str(out),
-            writer=PillowWriter(fps=int(fps / max(1, downsample))),
-            dpi=120,
-        )
-    else:
-        out = out.with_suffix(".gif")
-        anim.save(
-            str(out),
-            writer=PillowWriter(fps=int(fps / max(1, downsample))),
-            dpi=120,
-        )
+    finally:
+        # NEW: chiudi la figura per liberare il file prima di aprirlo
+        plt.close(fig)
 
     print(f"[OK] Salvato: {out}")
+    # NEW: prova ad aprire il file creato
+    open_with_default_app(out)
 
 
 def main():
@@ -228,6 +269,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# Uso:
-# python 04_animate_yolo.py --input 04_triangulated_yolo.json --out 04_yolo.gif --fps 12

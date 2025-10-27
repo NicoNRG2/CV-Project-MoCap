@@ -14,7 +14,7 @@ commands = [
     "python 02_generate_reprojected_annotations.py",
     "python 02_compute_reprojection_error.py",
     "python 02_debug_plot_2D_compare_keypoints.py 10",
-    "python 02_animate_triangulation.py --input temp/02_temp/02_triangulated_3d_skeleton.json --out 02_triangulated_skeleton.gif --fps 12"
+    "python 02_animate_triangulation.py  --input temp/02_temp/02_triangulated_3d_skeleton.json --out temp/02_temp/02_triangulated_skeleton.gif --fps 12"
 ]
 
 def run_command(cmd):
@@ -25,6 +25,7 @@ def run_command(cmd):
         sys.exit(result.returncode)
     else:
         print(f"✅ Completato: {cmd}")
+        input("👉 Premi INVIO per continuare al prossimo script...")
 
 def main():
     print("=== STEP 2: 3D player’s position ===")

@@ -67,4 +67,4 @@ for j, errs in sorted(per_joint.items()):
 
 
 #uso:
-# python .\02_compute_reprojection_error.py
+# python 02_compute_reprojection_error.py

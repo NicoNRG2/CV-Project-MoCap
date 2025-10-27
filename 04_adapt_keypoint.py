@@ -8,8 +8,8 @@ if len(sys.argv) != 2:
 
 num = sys.argv[1]
 
-input_path = Path(f"04_temp/labels{num}_filtered.json")
-output_path = Path(f"04_temp/labels{num}_filtered_adapted.json")
+input_path = Path(f"temp/04_temp/labels{num}_filtered.json")
+output_path = Path(f"temp/04_temp/labels{num}_filtered_adapted.json")
 
 # Tutti i 17 joint nell'ordine originale YOLO Pose
 ALL_JOINTS = [

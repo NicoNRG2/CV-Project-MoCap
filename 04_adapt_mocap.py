@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 
 # === INPUT / OUTPUT FILES ===
-input_path = Path("final_mocap.json")
-output_path = Path("04_adapted_final_mocap.json")
+input_path = Path("temp/03_temp/03_final_mocap.json")
+output_path = Path("temp/04_temp/04_adapted_final_mocap.json")
 
 # === Joint list originale (ordine del file) ===
 JOINTS_ORIG = [

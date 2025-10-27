@@ -212,7 +212,7 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
             writer = FFMpegWriter(fps=int(fps / max(1, downsample)), bitrate=3000)
             anim.save(str(out), writer=writer, dpi=120)
         except Exception as e:
-            print(f"[INFO] MP4 fallito ({e}). Salvo GIF…")
+            print(f"[INFO] MP4 failed ({e}). Saving GIF…")
             out = out.with_suffix(".gif")
             anim.save(
                 str(out),
@@ -240,7 +240,7 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Animazione 3D/2D MoCap da JSON")
+    ap = argparse.ArgumentParser(description="3D/2D MoCap  animation fromJSON")
     ap.add_argument(
         "--input", "-i", type=str, default="triangulated_3d_skeleton.json",
         help="Percorso al file JSON"
@@ -282,5 +282,5 @@ if __name__ == "__main__":
     main()
 
 # uso
-# python 02_animate_triangulation.py --input triangulated_3d_skeleton.json --out 02_triangulated_skeleton.gif --fps 12
-# aggiungi --no-open se NON vuoi l'apertura automatica
+# python 02_animate_triangulation.py  --input temp/02_temp/02_triangulated_3d_skeleton.json --out temp/02_temp/02_triangulated_skeleton.gif --fps 12
+# aggiungi --no-open se NON vuoi l'apertura automatica della gif

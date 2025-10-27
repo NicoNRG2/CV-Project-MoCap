@@ -30,7 +30,7 @@ def cut_frames(input_path, output_path, start_frame, end_frame):
     print(f"[OK] Saved cut frames to {output_path.resolve()}")
 
 if __name__ == "__main__":
-    input_path = "03_keypoints_mocap.json"
+    input_path = "03_position_data_mocap.json"
     output_path = "temp/03_temp/03_selected_keypoints.json"
     start = 980
     end = 1372

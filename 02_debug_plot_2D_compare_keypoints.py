@@ -32,7 +32,7 @@ def get_keypoints_for_image(annots, image_id):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Confronta keypoints rettificati vs riproiettati per una stessa image_id")
+        description="Compare rectified vs reprojected keypoints for the same image_id")
     parser.add_argument("image_id", type=int, help="ID dell'immagine da plottare")
     parser.add_argument("--rectified", default="temp/02_temp/02_annotations.coco.rectified.json",
                         help="Path al file COCO rettificato")
@@ -65,10 +65,10 @@ def main():
 
     # 5) Plot
     plt.figure(figsize=(6,6))
-    plt.scatter(xy_rect[:,0],   xy_rect[:,1],   c='g', marker='o', label='GT rettificati')
-    plt.scatter(xy_reproj[:,0], xy_reproj[:,1], c='r', marker='x', label='Riproiettati')
+    plt.scatter(xy_rect[:,0],   xy_rect[:,1],   c='g', marker='o', label='Rectified GT')
+    plt.scatter(xy_reproj[:,0], xy_reproj[:,1], c='r', marker='x', label='Reprojected')
     plt.legend(loc='upper right')
-    plt.title(f"Keypoints confronto per image_id {args.image_id}" + (f"\n{fname}" if fname else ""))
+    plt.title(f"Keypoints comparison on image_id {args.image_id}" + (f"\n{fname}" if fname else ""))
     plt.gca().invert_yaxis()  # coord. immagine (0,0) in alto a sinistra
     plt.xlabel("x [px]")
     plt.ylabel("y [px]")
@@ -80,4 +80,4 @@ if __name__ == "__main__":
     main()
 
 #uso:
-# python .\02_debug_plot_2D_compare_keypoints.py 1
+# python 02_debug_plot_2D_compare_keypoints.py 10

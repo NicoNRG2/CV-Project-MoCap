@@ -48,22 +48,22 @@ def download(url: str, dest: Path, timeout: int = 60) -> None:
                         if total:
                             pct = downloaded * 100 / total
                             sys.stdout.write(
-                                f"\rScaricando: {human_size(downloaded)} / {human_size(total)} ({pct:5.1f}%)"
+                                f"\Downloading: {human_size(downloaded)} / {human_size(total)} ({pct:5.1f}%)"
                             )
                         else:
-                            sys.stdout.write(f"\rScaricando: {human_size(downloaded)}")
+                            sys.stdout.write(f"\Downloading: {human_size(downloaded)}")
                         sys.stdout.flush()
                         last_print = now
             if total:
-                print(f"\rScaricando: {human_size(downloaded)} / {human_size(total)} (100.0%)")
+                print(f"\Downloading: {human_size(downloaded)} / {human_size(total)} (100.0%)")
             else:
-                print(f"\rScaricando: {human_size(downloaded)}")
+                print(f"\Downloading: {human_size(downloaded)}")
     except HTTPError as e:
-        raise SystemExit(f"Errore HTTP {e.code}: {e.reason}")
+        raise SystemExit(f"HTTP error {e.code}: {e.reason}")
     except URLError as e:
-        raise SystemExit(f"Errore di rete: {e.reason}")
+        raise SystemExit(f"network error: {e.reason}")
     except Exception as e:
-        raise SystemExit(f"Download fallito: {e}")
+        raise SystemExit(f"Download failed: {e}")
 
 def safe_unzip(zip_path: Path, out_dir: Path) -> None:
     """Estrae lo zip in modo sicuro (evita path traversal, compatibile con Windows)."""
@@ -87,12 +87,12 @@ def remove_readme_files(out_dir: Path) -> None:
                 print(f"Rimosso: {path}")
                 removed_any = True
             except Exception as e:
-                print(f"⚠️  Impossibile rimuovere {path}: {e}")
+                print(f"⚠️  Not possible to remove {path}: {e}")
     if not removed_any:
-        print("Nessun file README da rimuovere.")
+        print("No file README to remove.")
 
 def main():
-    parser = argparse.ArgumentParser(description="Scarica, estrai e ripulisci un dataset ZIP.")
+    parser = argparse.ArgumentParser(description="Download, extract, and clean a Roboflow ZIP dataset.")
     parser.add_argument("--url", default=DEFAULT_URL, help="URL del file ZIP (segue redirect).")
     parser.add_argument("--outdir", default=".", help="Cartella di estrazione (default: current dir).")
     parser.add_argument("--filename", default="roboflow.zip", help="Nome file zip locale (default: roboflow.zip).")
@@ -104,32 +104,35 @@ def main():
 
     # 1️⃣ Scarico
     if zip_path.exists() and not args.overwrite:
-        print(f"File già presente: {zip_path}. Usa --overwrite per riscaricare.")
+        print(f"File arlready exists: {zip_path}. Usa --overwrite per riscaricare.")
     else:
         print(f"URL: {args.url}")
-        print(f"Scarico in: {zip_path}")
+        print(f"Download in: {zip_path}")
         download(args.url, zip_path)
 
     # 2️⃣ Estraggo
-    print(f"Estrazione in: {out_dir}")
+    print(f"Extraction in: {out_dir}")
     try:
         safe_unzip(zip_path, out_dir)
     except zipfile.BadZipFile:
         raise SystemExit("Archivio ZIP corrotto o non valido.")
     except Exception as e:
-        raise SystemExit(f"Errore durante l'estrazione: {e}")
+        raise SystemExit(f"Error during the extraction: {e}")
 
     # 3️⃣ Rimuovo lo zip
     try:
         zip_path.unlink()
         print(f"Rimosso: {zip_path}")
     except Exception as e:
-        print(f"⚠️  Impossibile rimuovere lo zip ({e})")
+        print(f"⚠️  Non possible to remove the zip ({e})")
 
     # 4️⃣ Rimuovo i README
     remove_readme_files(out_dir)
 
-    print("✅ Tutto completato con successo!")
+    print("✅ All Done!")
 
 if __name__ == "__main__":
     main()
+
+#usage:
+# python 02_download_roboflow.py
