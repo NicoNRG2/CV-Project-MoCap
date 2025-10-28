@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Visualize YOLO Pose labels (bbox, ID, keypoints, skeleton) on top of images.
 

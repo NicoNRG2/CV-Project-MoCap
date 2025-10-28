@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Subsamples a motion-capture JSON starting from frame_980, then selects roughly one frame every 8.3 frames
 using a Decimal accumulator to avoid drift.

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 This Python script automatically sorts and moves images from a folder (default: images_rectified) into four subfolders based on their camera ID found in the filename.
 

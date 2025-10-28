@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Downloads a ZIP dataset (e.g., from Roboflow), extracts it safely, deletes the ZIP, and removes optional README files.
 Works on Linux/macOS/Windows/PowerShell.

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 Reprojects a 3D skeleton into each camera using calibration parameters and generates COCO-style 2D keypoint annotations per image.
 Reads rectified images metadata, triangulated 3D joints, and camera calibrations, then saves a new annotations JSON.

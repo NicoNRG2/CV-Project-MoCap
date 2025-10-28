@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Reorders joints in each frame of a MoCap JSON from an original schema to a new target schema.
 Reads an input JSON and writes a reordered output JSON.

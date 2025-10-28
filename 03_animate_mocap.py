@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-
 """
 Animates a 3D/2D MoCap skeleton from a JSON with 18 joints, supporting optional Z-axis rotation, downsampling, and frame limits.
 Exports to MP4/GIF and auto-opens the result with the system viewer.

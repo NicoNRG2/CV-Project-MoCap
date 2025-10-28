@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Animate 3D or 2D keypoints from a JSON file containing triangulated keypoints.
 The animation can be saved as an MP4 video (requires ffmpeg) or as a GIF.

@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 YOLOv11-Pose batch inferencer with JSON export and simple tracking to keep the same person ID across frames.
 

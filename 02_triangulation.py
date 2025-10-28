@@ -1,4 +1,3 @@
-
 """
 Triangulates 2D keypoints from multi-view YOLO annotations into 3D
 using camera projection matrices loaded from per-camera calibration files. Outputs a JSON with per-frame 3D joints.

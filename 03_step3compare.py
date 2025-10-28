@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Compares MoCap joint positions with triangulated results frame-by-frame.
 Optionally aligns via rigid/similarity Kabsch and prints MPJPE/RMSE/MSE statistics.

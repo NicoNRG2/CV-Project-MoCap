@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Removes selected joint coordinates (by index) from each frame in a JSON file and saves the filtered result to a new JSON file.
 

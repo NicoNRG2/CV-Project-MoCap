@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 Plots, on the same figure, rectified COCO keypoints vs reprojected keypoints for a given image_id. 
 Useful to visually check reprojection consistency.

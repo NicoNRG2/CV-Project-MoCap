@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 Merge multiple YOLO-Pose json outputs into a single COCO-like json file,
 suitable for triangulation in 02_triangulation.py.

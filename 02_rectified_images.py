@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Rectifies images using per-camera calibration (mtx, dist) by precomputing undistortion remap grids and saving rectified outputs.
 

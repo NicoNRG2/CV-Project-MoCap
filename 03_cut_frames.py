@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 Cuts a range of frames from a motion capture JSON file,
 saves only the selected frames to a new JSON, and reports missing frames if any.
