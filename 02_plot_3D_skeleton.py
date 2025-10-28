@@ -1,10 +1,19 @@
+"""
+Plots a single 3D skeleton frame from a triangulated JSON, highlighting the head joint in red and drawing bone connections.
+Saves a PNG preview and shows the figure.
+
+USAGE:
+> python3 02_plot_3D_skeleton.py [frame_number]
+
+"""
+
 import json
 import sys
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.lines as mlines  #  serve per creare il pallino rosso nella legenda
+import matplotlib.lines as mlines  # used to create the red dot in the legend
 
-# Definizioni statiche
+# Static definitions
 KEYPOINTS = [
     "Hips", "RHip", "RKnee", "RAnkle", "RFoot",
     "LHip", "LKnee", "LAnkle", "LFoot",
@@ -22,26 +31,25 @@ SKELETON = [
 ]
 
 def plot_frame(frame_number, json_path="temp/02_temp/02_triangulated_3d_skeleton.json"):
-    """
-    Plot 3D skeleton for a given frame.
-    """
+    # Plot 3D skeleton for a given frame.
+    
     try:
         with open(json_path, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"File JSON '{json_path}' non trovato.")
+        print(f"JSON file '{json_path}' not found.")
         return
 
     frames = data.get('skeleton_3d', {})
     try:
         idx = int(frame_number)
     except ValueError:
-        print(f"Numero di frame non valido: {frame_number}")
+        print(f"Invalid frame number: {frame_number}")
         return
 
     key = f"frame_{idx:04d}"
     if key not in frames:
-        print(f"Frame '{key}' non presente nel JSON.")
+        print(f"Frame '{key}' not present in the JSON.")
         return
 
     points = frames[key]
@@ -50,31 +58,29 @@ def plot_frame(frame_number, json_path="temp/02_temp/02_triangulated_3d_skeleton
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    # Scatter: testa in rosso, gli altri in blu
+    # Scatter: head in red, others in blue
     head_idx = KEYPOINTS.index("Head")
     for i, (x, y, z) in enumerate(points):
         c = 'r' if i == head_idx else 'b'
         s = 60 if i == head_idx else 20
         ax.scatter(x, y, z, c=c, s=s)
 
-    # Connessioni scheletro
+    # Skeleton connections
     for a, b in SKELETON:
         i, j = a-1, b-1
         ax.plot([xs[i], xs[j]], [ys[i], ys[j]], [zs[i], zs[j]], c='k')
 
     ax.set_xlabel('X'); ax.set_ylabel('Y'); ax.set_zlabel('Z')
     ax.set_box_aspect([1, 1, 2])  # Aspect ratio
-    plt.title(f"Scheletro 3D — {key}")
+    plt.title(f"3D Skeleton — {key}")
 
-    #  Legenda con pallino rosso
+    # Legend with red dot
     red_dot = mlines.Line2D([], [], color='r', marker='o', linestyle='None',
-                            markersize=8, label='Head (rosso)')
+                            markersize=8, label='Head (red)')
     plt.legend(handles=[red_dot])
 
     plt.show()
     plt.savefig("temp/02_temp/02_skeleton.png")
-    
-    
 
 
 if __name__ == "__main__":

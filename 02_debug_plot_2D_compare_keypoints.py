@@ -1,7 +1,14 @@
-"""
-DISEGNA keypoints rettificati vs riproiettati NELLO STESSO PLOT"""
-
 #!/usr/bin/env python3
+
+"""
+Plots, on the same figure, rectified COCO keypoints vs reprojected keypoints for a given image_id. 
+Useful to visually check reprojection consistency.
+
+USAGE:
+> python 02_debug_plot_2D_compare_keypoints.py 10
+
+"""
+
 import json
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,9 +17,9 @@ import os
 
 def load_coco_annotations(path):
     """
-    Carica il JSON COCO e ritorna:
-      - annots: lista di dizionari 'annotation'
-      - images: dict image_id → dizionario 'image'
+    Load the COCO JSON and return:
+      - annots: list of 'annotation' dictionaries
+      - images: dict image_id → 'image' dictionary
     """
     data = json.load(open(path, 'r'))
     annots = data['annotations']
@@ -21,8 +28,8 @@ def load_coco_annotations(path):
 
 def get_keypoints_for_image(annots, image_id):
     """
-    Cerca nelle annots l'unica annotation con image_id, estrae keypoints Nx3
-    Ritorna array (N_joints, 3), oppure None se non trovato.
+    Search in annots for the single annotation with image_id, extract keypoints Nx3.
+    Returns array (N_joints, 3), or None if not found.
     """
     for ann in annots:
         if ann['image_id'] == image_id:
@@ -33,33 +40,33 @@ def get_keypoints_for_image(annots, image_id):
 def main():
     parser = argparse.ArgumentParser(
         description="Compare rectified vs reprojected keypoints for the same image_id")
-    parser.add_argument("image_id", type=int, help="ID dell'immagine da plottare")
+    parser.add_argument("image_id", type=int, help="ID of the image to plot")
     parser.add_argument("--rectified", default="temp/02_temp/02_annotations.coco.rectified.json",
-                        help="Path al file COCO rettificato")
+                        help="Path to the rectified COCO file")
     parser.add_argument("--reproj", default="temp/02_temp/02_reprojected_annotations.json",
-                        help="Path al file COCO con keypoints riproiettati")
+                        help="Path to the COCO file with reprojected keypoints")
     args = parser.parse_args()
 
-    # 1) Carica le annotazioni
+    # 1) Load annotations
     rect_annots, rect_images = load_coco_annotations(args.rectified)
     reproj_annots, reproj_images = load_coco_annotations(args.reproj)
 
-    # 2) Estrai keypoints
+    # 2) Extract keypoints
     kp_rect = get_keypoints_for_image(rect_annots, args.image_id)
     kp_reproj = get_keypoints_for_image(reproj_annots, args.image_id)
 
     if kp_rect is None:
-        print(f"[ERRORE] Nessuna annotation rettificata per image_id {args.image_id}")
+        print(f"[ERROR] No rectified annotation for image_id {args.image_id}")
         return
     if kp_reproj is None:
-        print(f"[ERRORE] Nessuna annotation riproiettata per image_id {args.image_id}")
+        print(f"[ERROR] No reprojected annotation for image_id {args.image_id}")
         return
 
-    # 3) Ricava informazioni immagine per titolo e dimensioni (opzionale)
+    # 3) Get image info for title and size (optional)
     img_info = rect_images.get(args.image_id, {})
     fname = img_info.get('file_name', None)
 
-    # 4) Prepara i dati XY
+    # 4) Prepare XY data
     xy_rect   = kp_rect[:,:2]
     xy_reproj = kp_reproj[:,:2]
 
@@ -69,7 +76,7 @@ def main():
     plt.scatter(xy_reproj[:,0], xy_reproj[:,1], c='r', marker='x', label='Reprojected')
     plt.legend(loc='upper right')
     plt.title(f"Keypoints comparison on image_id {args.image_id}" + (f"\n{fname}" if fname else ""))
-    plt.gca().invert_yaxis()  # coord. immagine (0,0) in alto a sinistra
+    plt.gca().invert_yaxis()  # image coordinates: (0,0) at top-left
     plt.xlabel("x [px]")
     plt.ylabel("y [px]")
     plt.axis('equal')
@@ -79,5 +86,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-#uso:
-# python 02_debug_plot_2D_compare_keypoints.py 10

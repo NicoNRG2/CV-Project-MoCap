@@ -1,3 +1,13 @@
+
+"""
+Triangulates 2D keypoints from multi-view YOLO annotations into 3D
+using camera projection matrices loaded from per-camera calibration files. Outputs a JSON with per-frame 3D joints.
+
+USAGE:
+> python 02_triangulation.py --input path/to/annotations.json --output path/to/skeleton_3d.json
+
+"""
+
 import json
 import os
 import cv2
@@ -7,11 +17,11 @@ import argparse
 CALIB_DIR = 'camera_data'
 
 def main(input_json, output_json):
-    # 1) Carica annotazioni
+    # 1) Load annotations
     with open(input_json, 'r') as f:
         data = json.load(f)
 
-    # 2) Carica matrici di proiezione
+    # 2) Load projection matrices
     proj_matrices = {}
     for cam_folder in os.listdir(CALIB_DIR):
         calib_file = os.path.join(CALIB_DIR, cam_folder, 'calib', 'camera_calib.json')
@@ -26,7 +36,7 @@ def main(input_json, output_json):
         idx = cam_folder.split('_')[-1]
         proj_matrices[idx] = P
 
-    # 3) Raggruppa per frame
+    # 3) Group by frame
     annotations_by_frame = {}
     for ann in data['annotations']:
         img = next(i for i in data['images'] if i['id'] == ann['image_id'])
@@ -36,7 +46,7 @@ def main(input_json, output_json):
         key = f"frame_{frame}"
         annotations_by_frame.setdefault(key, {})[cam] = ann['keypoints']
 
-    # 4) Triangola escludendo i punti occlusi (v<1)
+    # 4) Triangulate excluding occluded points (v<1)
     joints_3d = {}
     for frame_key, cams in annotations_by_frame.items():
         if len(cams) < 2:
@@ -65,7 +75,7 @@ def main(input_json, output_json):
                 pts_3d.append(X[:3].tolist())
         joints_3d[frame_key] = pts_3d
 
-    # 5) Salva il risultato
+    # 5) Save result
     output_dir = os.path.dirname(output_json)
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
@@ -76,9 +86,9 @@ def main(input_json, output_json):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Triangola keypoints 2D in 3D da annotazioni YOLO.")
-    parser.add_argument("--input", "-i", required=True, help="Percorso del file JSON delle annotazioni (input).")
-    parser.add_argument("--output", "-o", required=True, help="Percorso del file JSON di output 3D.")
+    parser = argparse.ArgumentParser(description="Triangulate 2D keypoints into 3D from YOLO annotations.")
+    parser.add_argument("--input", "-i", required=True, help="Path to the annotations JSON file (input).")
+    parser.add_argument("--output", "-o", required=True, help="Path to the 3D output JSON file.")
     args = parser.parse_args()
 
     main(args.input, args.output)

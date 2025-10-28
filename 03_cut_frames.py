@@ -1,9 +1,19 @@
 #!/usr/bin/env python3
+
+"""
+Cuts a range of frames from a motion capture JSON file,
+saves only the selected frames to a new JSON, and reports missing frames if any.
+
+USAGE:
+> python3 03_cut_frames.py
+
+"""
+
 import json
 from pathlib import Path
 
 def cut_frames(input_path, output_path, start_frame, end_frame):
-    """Cut frames in the range [start_frame, end_frame] (inclusive)."""
+    # Cut frames in the range [start_frame, end_frame] (inclusive).
     input_path = Path(input_path)
     output_path = Path(output_path)
 
@@ -21,7 +31,7 @@ def cut_frames(input_path, output_path, start_frame, end_frame):
 
     print(f"Selected {len(new_data)} frames out of requested {end_frame - start_frame + 1} (missing: {missing})")
 
-    # 🔧 Crea la cartella di destinazione se non esiste
+    # Create the destination folder if it does not exist
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     with output_path.open("w", encoding="utf-8") as f:

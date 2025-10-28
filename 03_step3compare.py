@@ -1,22 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
-Confronto frame-by-frame tra:
-- MoCap JSON (frames al top-level): dati_tuta_8p3_renamed.json
-- Triangolazione JSON (frames al top-level OPPURE sotto una chiave, es. 'skeleton_3d')
+Compares MoCap joint positions with triangulated results frame-by-frame.
+Optionally aligns via rigid/similarity Kabsch and prints MPJPE/RMSE/MSE statistics.
 
-Output:
-- (solo console) statistiche: MPJPE medio/mediano, MSE medio, RMSE medio
-- NIENTE CSV su disco
+USAGE:
+> python 03_step3compare.py
 
-Uso tipico (nuovo JSON: frames al top-level):
-python compare_mocap_vs_triang.py \
-  --mocap /mnt/data/dati_tuta_8p3_renamed.json \
-  --triang /mnt/data/triangulated_3d_skeleton.json \
-  --align rigid        # none | rigid | similarity
-
-Uso retro-compatibile (vecchio JSON con chiave):
-  ... --triang-key skeleton_3d
 """
 
 import argparse
@@ -29,13 +20,13 @@ from typing import Dict, List, Tuple, Optional
 def load_frames_mocap(path: str) -> Dict[str, List[List[float]]]:
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
-    # Atteso: { "frame_0001": [[x,y,z], ...], ... }
+    # Expected: { "frame_0001": [[x,y,z], ...], ... }
     return data
 
 def _looks_like_frames_mapping(obj) -> bool:
     if not isinstance(obj, dict):
         return False
-    # euristica: almeno una chiave che inizia con "frame_" e valore lista di [x,y,z]
+    # Heuristic: at least one key starting with "frame_" and value is a list of [x,y,z]
     for k, v in obj.items():
         if isinstance(k, str) and k.startswith("frame_") and isinstance(v, list):
             return True
@@ -43,33 +34,33 @@ def _looks_like_frames_mapping(obj) -> bool:
 
 def load_frames_triang(path: str, key: Optional[str] = None) -> Dict[str, List[List[float]]]:
     """
-    Carica i frame di triangolazione:
-    - Se key è fornita e presente -> usa data[key]
-    - Altrimenti prova ad usare i frame al top-level
-    - Se esiste una singola chiave che contiene i frame, usa quella
+    Load triangulation frames:
+    - If key is provided and present -> use data[key]
+    - Otherwise, try to use frames at the top level
+    - If there is a single container key that holds the frames, use that
     """
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    # 1) Se l'utente ha indicato una chiave, prova ad usarla
+    # 1) If the user specified a key, try to use it
     if key:
         if key in data and _looks_like_frames_mapping(data[key]):
             return data[key]
         else:
-            print(f"[INFO] Chiave '{key}' non trovata o non valida, provo i frame al top-level...")
+            print(f"[INFO] Key '{key}' not found or invalid, trying top-level frames...")
 
     # 2) Top-level?
     if _looks_like_frames_mapping(data):
         return data
 
-    # 3) Un solo livello contenitore?
+    # 3) Single-level container?
     if isinstance(data, dict) and len(data) == 1:
         only_key, only_val = next(iter(data.items()))
         if _looks_like_frames_mapping(only_val):
-            print(f"[INFO] Uso la chiave auto-rilevata '{only_key}'.")
+            print(f"[INFO] Using auto-detected key '{only_key}'.")
             return only_val
 
-    raise KeyError("Formato JSON della triangolazione non riconosciuto: non trovo un mapping 'frame_xxxx'.")
+    raise KeyError("Unrecognized triangulation JSON format: cannot find a 'frame_xxxx' mapping.")
 
 def kabsch(P: np.ndarray, Q: np.ndarray, allow_scale: bool=False) -> Tuple[np.ndarray, np.ndarray, float]:
     assert P.shape == Q.shape and P.shape[1] == 3
@@ -113,13 +104,13 @@ def compute_errors(A: np.ndarray, B: np.ndarray) -> Dict[str, float]:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mocap", default="temp/03_temp/03_final_mocap.json" , help="Path al JSON MoCap (frames al top-level).")
-    ap.add_argument("--triang", default="temp/03_temp/03_final_triangulation.json", help="Path al JSON triangolazione.")
-    ap.add_argument("--triang-key", default=None, help="(Opzionale) Chiave che contiene i frame nel JSON triangolazione.")
-    ap.add_argument("--out", default="out_compare", help="(Ignorato) Cartella output: non si salvano CSV.")
-    ap.add_argument("--per-frame-csv", action="store_true", help="(Ignorato) Niente CSV per frame viene scritto.")
+    ap.add_argument("--mocap", default="temp/03_temp/03_final_mocap.json" , help="Path to MoCap JSON (frames at top-level).")
+    ap.add_argument("--triang", default="temp/03_temp/03_final_triangulation.json", help="Path to triangulation JSON.")
+    ap.add_argument("--triang-key", default=None, help="(Optional) Key that contains the frames inside the triangulation JSON.")
+    ap.add_argument("--out", default="out_compare", help="(Ignored) Output folder: CSVs are not saved.")
+    ap.add_argument("--per-frame-csv", action="store_true", help="(Ignored) No per-frame CSV will be written.")
     ap.add_argument("--align", default="similarity", choices=["none", "rigid", "similarity"],
-                   help="Allineamento: none, rigid (Kabsch), similarity (rot+trasl+scala).")
+                   help="Alignment: none, rigid (Kabsch), similarity (rot+trans+scale).")
     args = ap.parse_args()
 
     mocap = load_frames_mocap(args.mocap)
@@ -134,19 +125,19 @@ def main():
 
     print(f"[INFO] Common frames: {len(common)}")
     if missing_in_triang:
-        print(f"[WARN] Frame presenti in MoCap ma non in Triangolazione: {len(missing_in_triang)} (es. {missing_in_triang[:5]})")
+        print(f"[WARN] Frames present in MoCap but not in Triangulation: {len(missing_in_triang)} (e.g., {missing_in_triang[:5]})")
     if missing_in_mocap:
-        print(f"[WARN] Frame presenti in Triangolazione ma non in MoCap: {len(missing_in_mocap)} (es. {missing_in_mocap[:5]})")
+        print(f"[WARN] Frames present in Triangulation but not in MoCap: {len(missing_in_mocap)} (e.g., {missing_in_mocap[:5]})")
 
     rows = []
     for fr in common:
         A = np.asarray(mocap[fr], dtype=np.float64)
         B = np.asarray(triang[fr], dtype=np.float64)
         if A.ndim != 2 or B.ndim != 2 or A.shape[1] != 3 or B.shape[1] != 3:
-            print(f"[SKIP] {fr}: formato inatteso (shape A={A.shape}, B={B.shape})")
+            print(f"[SKIP] {fr}: unexpected format (shape A={A.shape}, B={B.shape})")
             continue
         if A.shape[0] != B.shape[0]:
-            print(f"[WARN] {fr}: joint count diverso (A={A.shape[0]}, B={B.shape[0]}). Confronto sugli indici comuni.")
+            print(f"[WARN] {fr}: different joint count (A={A.shape[0]}, B={B.shape[0]}). Comparing on common indices.")
             J = min(A.shape[0], B.shape[0])
             A = A[:J]
             B = B[:J]
@@ -174,10 +165,7 @@ def main():
         print(f"[STATS] Mean MSE over all frames: {summary['mse'].mean():.3f} mm²")
         print(f"[STATS] Mean RMSE over all frames: {summary['rmse'].mean():.3f} mm")
     else:
-        print("[DONE] Nessun frame in comune analizzabile.")
+        print("[DONE] No analyzable common frames.")
 
 if __name__ == "__main__":
     main()
-
-# Esempio:
-# python 03_step3compare.py

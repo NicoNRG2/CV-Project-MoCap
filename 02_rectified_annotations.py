@@ -1,3 +1,12 @@
+"""
+Undistorts COCO-format keypoints and bounding boxes to match rectified videos, using per-camera calibration.
+Reads input annotations, applies OpenCV undistortion maps, and writes a rectified JSON.
+
+USAGE:
+> python 02_rectified_annotations.py
+
+"""
+
 import json
 import os
 import re
@@ -14,9 +23,8 @@ CALIB_FILES = {
 
 
 def load_calibration(calib_path):
-    """
-    Load camera matrix and distortion coefficients from a JSON file.
-    """
+    # Load camera matrix and distortion coefficients from a JSON file.    
+    
     with open(calib_path, 'r') as f:
         calib = json.load(f)
     mtx = np.array(calib['mtx'], dtype=np.float32)
@@ -25,10 +33,9 @@ def load_calibration(calib_path):
 
 
 def rectify_annotations(coco_json_path, output_json_path):
-    """
-    Read COCO-format annotations, undistort keypoints and bboxes using the same maps
-    that are used for video rectification, and save rectified JSON.
-    """
+    # Read COCO-format annotations, undistort keypoints and bboxes using the same maps
+    # that are used for video rectification, and save rectified JSON.
+    
     # Load annotations
     with open(coco_json_path, 'r') as f:
         data = json.load(f)

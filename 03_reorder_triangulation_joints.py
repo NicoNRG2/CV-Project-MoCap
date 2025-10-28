@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Reorders joints in each frame of a MoCap JSON from an original schema to a new target schema.
+Reads an input JSON and writes a reordered output JSON.
+
+USAGE:
+> python reorder_triangulation_joints.py
+
+"""
+
 import json
 import argparse
 from pathlib import Path
 
-# Ordine originale dei joint
+# Original joint order
 ORIGINAL_ORDER = [
     "Hips",
     "RHip","RKnee","RAnkle","RFoot",
@@ -15,7 +24,7 @@ ORIGINAL_ORDER = [
     "LShoulder","LElbow","LHand"
 ]
 
-# Nuovo ordine desiderato
+# Desired new order
 NEW_ORDER = [
     "Hips","Spine","Neck","Head",
     "LShoulder","LElbow","LHand",
@@ -24,40 +33,38 @@ NEW_ORDER = [
     "RHip","RKnee","RAnkle","RFoot"
 ]
 
-# Mappa: nuovo indice -> vecchio indice
+# Map: new index -> old index
 index_map = [ORIGINAL_ORDER.index(j) for j in NEW_ORDER]
 
 def reorder_file(input_path: Path, output_path: Path):
-    # Carica il JSON
+    # Load JSON
     with open(input_path, "r") as f:
         data = json.load(f)
 
-    # Ignora il campo "skeleton_3d" se presente
+    # Ignore the "skeleton_3d" field if present
     if "skeleton_3d" in data:
         data = data["skeleton_3d"]
 
     reordered = {}
     for frame, coords in data.items():
         if not isinstance(coords, list):
-            raise ValueError(f"Frame {frame} non contiene una lista di joint.")
+            raise ValueError(f"Frame {frame} does not contain a list of joints.")
         if len(coords) != len(ORIGINAL_ORDER):
-            raise ValueError(f"Frame {frame}: attesi {len(ORIGINAL_ORDER)} joint, trovati {len(coords)}.")
+            raise ValueError(f"Frame {frame}: expected {len(ORIGINAL_ORDER)} joints, found {len(coords)}.")
         reordered[frame] = [coords[i] for i in index_map]
 
-    # Scrivi il risultato
+    # Write result
     with open(output_path, "w") as f:
         json.dump(reordered, f, indent=2)
 
-    print(f"✅ File salvato in {output_path} ({len(reordered)} frame elaborati)")
+    print(f"File saved to {output_path} ({len(reordered)} frames processed)")
 
 def main():
-    parser = argparse.ArgumentParser(description="Riordina i joint nei frame di un file JSON.")
-    parser.add_argument("--input_json", default="temp/02_temp/02_triangulated_3d_skeleton.json", type=Path, help="File JSON di input")
-    parser.add_argument("--output_json", default="temp/03_temp/03_final_triangulation.json", type=Path, help="File JSON di output")
+    parser = argparse.ArgumentParser(description="Reorder joints in the frames of a JSON file.")
+    parser.add_argument("--input_json", default="temp/02_temp/02_triangulated_3d_skeleton.json", type=Path, help="Input JSON file")
+    parser.add_argument("--output_json", default="temp/03_temp/03_final_triangulation.json", type=Path, help="Output JSON file")
     args = parser.parse_args()
     reorder_file(args.input_json, args.output_json)
 
 if __name__ == "__main__":
     main()
-
-# python reorder_triangulation_joints.py 

@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+
+"""
+Animates a 3D/2D MoCap skeleton from a JSON with 18 joints, supporting optional Z-axis rotation, downsampling, and frame limits.
+Exports to MP4/GIF and auto-opens the result with the system viewer.
+
+USAGE:
+> python 03_animate_mocap.py --input temp/03_temp/03_selected_keypoints_adapted_joints.json --out temp/03_temp/03_animate_mocap_100fps.mp4 --fps 100 --view 3d
+
+"""
+
 import json
 import argparse
 import os
@@ -17,7 +27,7 @@ import imageio_ffmpeg
 mpl.rcParams['animation.ffmpeg_path'] = imageio_ffmpeg.get_ffmpeg_exe()
 
 
-# Joint names nell'ordine fornito
+# Joint names in the provided order
 JOINTS = [
     "Hips","Spine","Neck","Head",
     "LShoulder","LElbow","LHand",
@@ -26,7 +36,7 @@ JOINTS = [
     "RHip","RKnee","RAnkle","RFoot"
 ]
 
-# Connessioni (ossa) semplici
+# Simple bone connections
 BONES = [
     ("Hips","Spine"), ("Spine","Neck"), ("Neck","Head"),
     ("Neck","LShoulder"), ("LShoulder","LElbow"), ("LElbow","LHand"),
@@ -34,7 +44,6 @@ BONES = [
     ("Hips","LHip"), ("LHip","LKnee"), ("LKnee","LAnkle"), ("LAnkle","LFoot"),
     ("Hips","RHip"), ("RHip","RKnee"), ("RKnee","RAnkle"), ("RAnkle","RFoot"),
 ]
-
 
 def load_frames(path):
     with open(path, "r") as f:
@@ -51,9 +60,8 @@ def load_frames(path):
     nJ = len(JOINTS)
     frames = [f for f in frames if f.shape == (nJ, 3)]
     if not frames:
-        raise ValueError("Nessun frame valido nel JSON (attesi 18 joint per frame).")
+        raise ValueError("No valid frames in JSON (expected 18 joints per frame).")
     return frames
-
 
 def compute_bounds(frames, pad_ratio=0.05):
     pts = np.concatenate(frames, axis=0)
@@ -61,7 +69,6 @@ def compute_bounds(frames, pad_ratio=0.05):
     maxs = pts.max(0)
     pad = (maxs - mins).max() * pad_ratio
     return (mins - pad, maxs + pad)
-
 
 def make_axes(fig, view, bounds):
     if view == "3d":
@@ -96,7 +103,6 @@ def make_axes(fig, view, bounds):
         ax.set_title(f"Projection: {view.upper()}")
     return ax
 
-
 def project_points(p, view):
     if view == "3d":
         return p
@@ -106,11 +112,10 @@ def project_points(p, view):
         return p[:, [0, 2]]
     if view == "yz":
         return p[:, [1, 2]]
-    raise ValueError("view non valida")
-
+    raise ValueError("invalid view")
 
 def open_file_with_default_app(path: Path):
-    """Apre un file con il visualizzatore predefinito del sistema operativo."""
+    # Open a file with the operating system's default viewer.
     p = Path(path).resolve()
     try:
         if sys.platform.startswith("win"):
@@ -120,8 +125,7 @@ def open_file_with_default_app(path: Path):
         else:
             subprocess.run(["xdg-open", str(p)], check=False)
     except Exception as e:
-        print(f"[WARN] Impossibile aprire automaticamente il file: {e}")
-
+        print(f"[WARN] Unable to open the file automatically: {e}")
 
 def animate(frames, fps, out, view, downsample, max_frames, point_size, name):
     frames = frames[::max(1, downsample)]
@@ -129,10 +133,10 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size, name):
         frames = frames[:max_frames]
     nF = len(frames)
 
-    # Bounds stabili
+    # Stable bounds
     mins, maxs = compute_bounds(frames)
 
-    # Indici ossa
+    # Bone indices
     j2i = {n: i for i, n in enumerate(JOINTS)}
     edges = [(j2i[a], j2i[b]) for a, b in BONES]
 
@@ -140,7 +144,7 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size, name):
     ax = make_axes(fig, view, (mins, maxs))
     ax.set_title(name)
 
-    # Inizializzazione
+    # Initialization
     p0 = frames[0]
     if view == "3d":
         scat = ax.scatter(p0[:, 0], p0[:, 1], p0[:, 2], s=point_size)
@@ -192,7 +196,7 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size, name):
             writer = FFMpegWriter(fps=int(fps / max(1, downsample)), bitrate=3000)
             anim.save(str(out), writer=writer, dpi=120)
         except Exception as e:
-            print(f"[INFO] MP4 fallito ({e}). Salvo GIF…")
+            print(f"[INFO] MP4 failed ({e}). Saving GIF…")
             out = out.with_suffix(".gif")
             anim.save(str(out), writer=PillowWriter(fps=int(fps / max(1, downsample))), dpi=120)
             final_path = out
@@ -203,14 +207,13 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size, name):
         anim.save(str(out), writer=PillowWriter(fps=int(fps / max(1, downsample))), dpi=120)
         final_path = out
 
-    print(f"[OK] Salvato: {final_path}")
-    open_file_with_default_app(final_path)  # <--- apertura automatica
-
+    print(f"[OK] Saved: {final_path}")
+    open_file_with_default_app(final_path)  # <--- automatic opening
 
 def rotate_frames_z(frames, degrees):
-    """Ruota tutti i frame attorno all'asse Z di un certo angolo (in gradi)."""
+    #Rotate all frames around the Z axis by a given angle (in degrees).
     if abs(degrees) < 1e-9:
-        return frames  # nessuna rotazione
+        return frames  # no rotation
     th = radians(degrees)
     Rz = np.array([
         [cos(th), -sin(th), 0],
@@ -219,32 +222,24 @@ def rotate_frames_z(frames, degrees):
     ])
     return [f @ Rz.T for f in frames]
 
-
 def main():
-    ap = argparse.ArgumentParser(description="Animazione 3D/2D MoCap da JSON")
-    ap.add_argument("--input", "-i", type=str, default="temp/03_temp/03_selected_keypoints_adapted_joints.json", help="Percorso al file JSON")
-    ap.add_argument("--out", "-o", type=str, default="temp/03_temp/03_animate_mocap_100fps.mp4", help="Output (mp4/gif/png). mp4 richiede ffmpeg.")
-    ap.add_argument("--fps", type=int, default=100, help="Frame rate di acquisizione")
-    ap.add_argument("--downsample", type=int, default=1, help="Usa 2,4,10 per alleggerire")
-    ap.add_argument("--max-frames", type=int, default=0, help="0 = tutti, >0 = limita")
-    ap.add_argument("--view", choices=["3d","xy","xz","yz"], default="3d", help="Vista 3D o proiezione 2D") 
-    ap.add_argument("--point-size", type=float, default=20.0, help="Dimensione marker giunti")
-    ap.add_argument("--rotate", type=float, default=0, help="Ruota tutti i frame attorno all’asse Z di N gradi (default=0 = nessuna rotazione)")
-    ap.add_argument("--name", type=str, default="MoCap Skeleton", help="titolo del plot")
+    ap = argparse.ArgumentParser(description="3D/2D MoCap animation from JSON")
+    ap.add_argument("--input", "-i", type=str, default="temp/03_temp/03_selected_keypoints_adapted_joints.json", help="Path to the JSON file")
+    ap.add_argument("--out", "-o", type=str, default="temp/03_temp/03_animate_mocap_100fps.mp4", help="Output (mp4/gif/png). mp4 requires ffmpeg.")
+    ap.add_argument("--fps", type=int, default=100, help="Acquisition frame rate")
+    ap.add_argument("--downsample", type=int, default=1, help="Use 2,4,10 to downsample")
+    ap.add_argument("--max-frames", type=int, default=0, help="0 = all, >0 = limit")
+    ap.add_argument("--view", choices=["3d","xy","xz","yz"], default="3d", help="3D view or 2D projection")
+    ap.add_argument("--point-size", type=float, default=20.0, help="Joint marker size")
+    ap.add_argument("--rotate", type=float, default=0, help="Rotate all frames around the Z axis by N degrees (default=0 = no rotation)")
+    ap.add_argument("--name", type=str, default="MoCap Skeleton", help="plot title")
     args = ap.parse_args()
 
     frames = load_frames(args.input)
     frames = rotate_frames_z(frames, args.rotate)
 
-    animate(frames=frames,
-            fps=args.fps,
-            out=args.out,
-            view=args.view,
-            downsample=args.downsample,
-            max_frames=args.max_frames,
-            point_size=args.point_size,
-            name=args.name)
-
+    animate(frames=frames, fps=args.fps, out=args.out, view=args.view, downsample=args.downsample,
+            max_frames=args.max_frames, point_size=args.point_size, name=args.name)
 
 if __name__ == "__main__":
     main()

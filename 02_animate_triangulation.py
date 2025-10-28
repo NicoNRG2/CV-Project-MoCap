@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Animates a 3D skeleton (or 2D projections) from a JSON of joint positions, with optional fixed -90° Z-rotation,
+and exports to MP4/GIF. Supports downsampling, frame limits, and auto-opening the exported file.
+
+USAGE: 
+> python 02_animate_triangulation.py  --input temp/02_temp/02_triangulated_3d_skeleton.json --out temp/02_temp/02_triangulated_skeleton.gif --fps 12
+add --no-open if you do NOT want the gif to open automatically
+
+"""
+
 import json
 import argparse
 from pathlib import Path
@@ -11,7 +21,7 @@ from matplotlib.animation import FuncAnimation, FFMpegWriter, PillowWriter
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 import sys, os, subprocess  # <--- NEW
 
-# Joint names nell'ordine fornito
+# Joint names in the provided order
 JOINTS = [
     "Hips",
     "RHip", "RKnee", "RAnkle", "RFoot",
@@ -21,16 +31,16 @@ JOINTS = [
     "LShoulder", "LElbow", "LHand",
 ]
 
-# Coppie di indici 1-based come nel tuo JSON "skeleton"
+# Pairs of 1-based indices as in your JSON "skeleton"
 _SKELETON_IDX_1BASED = [
-    (1,2), (2,3), (3,4), (4,5),          # catena destra-anca → piede
-    (1,6), (6,7), (7,8), (8,9),          # catena sinistra-anca → piede
-    (1,10), (10,11), (11,12),            # tronco: Hips→Spine→Neck→Head
-    (11,13), (13,14), (14,15),           # braccio destro
-    (11,16), (16,17), (17,18),           # braccio sinistro
+    (1,2), (2,3), (3,4), (4,5),          # right chain: hip → foot
+    (1,6), (6,7), (7,8), (8,9),          # left chain: hip → foot
+    (1,10), (10,11), (11,12),            # torso: Hips→Spine→Neck→Head
+    (11,13), (13,14), (14,15),           # right arm
+    (11,16), (16,17), (17,18),           # left arm
 ]
 
-# Converte da indici 1-based a nomi joint (usa 0-based in Python)
+# Convert from 1-based indices to joint names (use 0-based in Python)
 BONES = [(JOINTS[i-1], JOINTS[j-1]) for (i, j) in _SKELETON_IDX_1BASED]
 
 
@@ -38,7 +48,7 @@ def load_frames(path):
     with open(path, "r") as f:
         data = json.load(f)
 
-    # Se contiene il campo "skeleton_3d", entra nel sotto-dizionario
+    # If it contains the "skeleton_3d" field, enter the sub-dictionary
     if "skeleton_3d" in data:
         data = data["skeleton_3d"]
 
@@ -54,13 +64,13 @@ def load_frames(path):
     nJ = len(JOINTS)
     frames = [f for f in frames if f.shape == (nJ, 3)]
     if not frames:
-        raise ValueError("Nessun frame valido nel JSON (attesi 18 joint per frame).")
+        raise ValueError("No valid frames in JSON (expected 18 joints per frame).")
 
     return frames
 
 
 def rotate_frames_z(frames):
-    """Ruota ogni frame di -90° attorno all’asse Z (antiorario guardando lungo +Z)."""
+    #Rotate each frame by -90° around the Z axis (counterclockwise when looking along +Z).
     th = radians(-90)
     Rz = np.array([
         [cos(th), -sin(th), 0.0],
@@ -121,11 +131,11 @@ def project_points(p, view):
         return p[:, [0, 2]]
     if view == "yz":
         return p[:, [1, 2]]
-    raise ValueError("view non valida")
+    raise ValueError("invalid view")
 
 
 def _open_in_os(path: Path):
-    """Apre il file con l'app predefinita del sistema (Windows/Mac/Linux)."""
+    # Open the file with the system's default application (Windows/Mac/Linux).
     p = Path(path).resolve()
     try:
         if sys.platform.startswith("win"):
@@ -135,7 +145,7 @@ def _open_in_os(path: Path):
         else:
             subprocess.run(["xdg-open", str(p)], check=False)
     except Exception as e:
-        print(f"[WARN] Impossibile aprire automaticamente il file: {e}")
+        print(f"[WARN] Unable to open the file automatically: {e}")
 
 
 def animate(frames, fps, out, view, downsample, max_frames, point_size):
@@ -144,10 +154,10 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
         frames = frames[:max_frames]
     nF = len(frames)
 
-    # Bounds stabili
+    # Stable bounds
     mins, maxs = compute_bounds(frames)
 
-    # Indici ossa
+    # Bone indices
     j2i = {n: i for i, n in enumerate(JOINTS)}
     edges = [(j2i[a], j2i[b]) for a, b in BONES]
 
@@ -155,7 +165,7 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
     ax = make_axes(fig, view, (mins, maxs))
     ax.set_title("Triangulated Skeleton")
 
-    # Inizializzazione
+    # Initialization
     p0 = frames[0]
     if view == "3d":
         scat = ax.scatter(p0[:, 0], p0[:, 1], p0[:, 2], s=point_size)
@@ -235,34 +245,34 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
         )
         saved_path = out
 
-    print(f"[OK] Salvato: {saved_path}")
-    return Path(saved_path)  # <--- NEW: ritorno il percorso finale
+    print(f"[OK] Saved: {saved_path}")
+    return Path(saved_path)  # <--- NEW: return final path
 
 
 def main():
-    ap = argparse.ArgumentParser(description="3D/2D MoCap  animation fromJSON")
+    ap = argparse.ArgumentParser(description="3D/2D MoCap animation from JSON")
     ap.add_argument(
         "--input", "-i", type=str, default="triangulated_3d_skeleton.json",
-        help="Percorso al file JSON"
+        help="Path to the JSON file"
     )
     ap.add_argument(
         "--out", "-o", type=str, default="skeleton_animation.mp4",
-        help="Output (mp4/gif/png). mp4 richiede ffmpeg."
+        help="Output (mp4/gif/png). mp4 requires ffmpeg."
     )
-    ap.add_argument("--fps", type=int, default=100, help="Frame rate di acquisizione")
-    ap.add_argument("--downsample", type=int, default=1, help="Usa 2,4,10 per alleggerire")
-    ap.add_argument("--max-frames", type=int, default=0, help="0 = tutti, >0 = limita")
+    ap.add_argument("--fps", type=int, default=100, help="Acquisition frame rate")
+    ap.add_argument("--downsample", type=int, default=1, help="Use 2,4,10 to downsample")
+    ap.add_argument("--max-frames", type=int, default=0, help="0 = all, >0 = limit")
     ap.add_argument(
         "--view", choices=["3d", "xy", "xz", "yz"], default="3d",
-        help="Vista 3D o proiezione 2D"
+        help="3D view or 2D projection"
     )
-    ap.add_argument("--point-size", type=float, default=20.0, help="Dimensione marker giunti")
+    ap.add_argument("--point-size", type=float, default=20.0, help="Joint marker size")
     ap.add_argument("--no-open", action="store_true",
-                    help="Non aprire automaticamente il file generato")  # <--- NEW
+                    help="Do not automatically open the generated file")  # <--- NEW
     args = ap.parse_args()
 
     frames = load_frames(args.input)
-    frames = rotate_frames_z(frames)  # <--- rotazione fissa -90° attorno a Z per allinearlo con mocap animation
+    frames = rotate_frames_z(frames)  # <--- fixed -90° rotation around Z to align with mocap animation
     saved_path = animate(
         frames=frames,
         fps=args.fps,
@@ -273,7 +283,7 @@ def main():
         point_size=args.point_size,
     )
 
-    # Apertura automatica del file generato
+    # Automatically open the generated file
     if not args.no_open:
         _open_in_os(saved_path)
 
@@ -281,6 +291,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-# uso
-# python 02_animate_triangulation.py  --input temp/02_temp/02_triangulated_3d_skeleton.json --out temp/02_temp/02_triangulated_skeleton.gif --fps 12
-# aggiungi --no-open se NON vuoi l'apertura automatica della gif

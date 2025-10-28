@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-Scarica un dataset ZIP da Roboflow (o qualunque URL), lo estrae,
-rimuove lo zip e i file di README inutili.
-Compatibile con Linux/macOS/Windows/PowerShell.
+Downloads a ZIP dataset (e.g., from Roboflow), extracts it safely, deletes the ZIP, and removes optional README files.
+Works on Linux/macOS/Windows/PowerShell.
+
+USAGE:
+> python 02_download_roboflow.py
+
 """
 
 import argparse
@@ -26,7 +29,7 @@ def human_size(n: int) -> str:
     return f"{n:.1f} PB"
 
 def download(url: str, dest: Path, timeout: int = 60) -> None:
-    """Scarica un file con una barra di avanzamento minimale."""
+    #Download a file with a minimal progress indicator.
     req = Request(url, headers={"User-Agent": "python-downloader/1.0"})
     try:
         with urlopen(req, timeout=timeout) as resp:
@@ -48,16 +51,16 @@ def download(url: str, dest: Path, timeout: int = 60) -> None:
                         if total:
                             pct = downloaded * 100 / total
                             sys.stdout.write(
-                                f"\Downloading: {human_size(downloaded)} / {human_size(total)} ({pct:5.1f}%)"
+                                f"\rDownloading: {human_size(downloaded)} / {human_size(total)} ({pct:5.1f}%)"
                             )
                         else:
-                            sys.stdout.write(f"\Downloading: {human_size(downloaded)}")
+                            sys.stdout.write(f"\rDownloading: {human_size(downloaded)}")
                         sys.stdout.flush()
                         last_print = now
             if total:
-                print(f"\Downloading: {human_size(downloaded)} / {human_size(total)} (100.0%)")
+                print(f"Downloading: {human_size(downloaded)} / {human_size(total)} (100.0%)")
             else:
-                print(f"\Downloading: {human_size(downloaded)}")
+                print(f"Downloading: {human_size(downloaded)}")
     except HTTPError as e:
         raise SystemExit(f"HTTP error {e.code}: {e.reason}")
     except URLError as e:
@@ -66,17 +69,17 @@ def download(url: str, dest: Path, timeout: int = 60) -> None:
         raise SystemExit(f"Download failed: {e}")
 
 def safe_unzip(zip_path: Path, out_dir: Path) -> None:
-    """Estrae lo zip in modo sicuro (evita path traversal, compatibile con Windows)."""
+    #Safely extract the zip (prevents path traversal; Windows-compatible).
     with zipfile.ZipFile(zip_path, "r") as zf:
         for member in zf.infolist():
             extracted_path = out_dir / member.filename
-            # Prevenzione path traversal (converti in stringa prima di startswith)
+            # Prevent path traversal (convert to string before startswith)
             if not str(extracted_path.resolve()).startswith(str(out_dir.resolve())):
-                raise SystemExit(f"Percorso sospetto nello zip: {member.filename}")
+                raise SystemExit(f"Suspicious path in zip: {member.filename}")
         zf.extractall(out_dir)
 
 def remove_readme_files(out_dir: Path) -> None:
-    """Rimuove i file README.dataset.txt e README.roboflow.txt se presenti."""
+    #Remove README.dataset.txt and README.roboflow.txt if present.
     targets = ["README.dataset.txt", "README.roboflow.txt"]
     removed_any = False
     for name in targets:
@@ -84,55 +87,53 @@ def remove_readme_files(out_dir: Path) -> None:
         if path.exists():
             try:
                 path.unlink()
-                print(f"Rimosso: {path}")
+                print(f"Removed: {path}")
                 removed_any = True
             except Exception as e:
-                print(f"⚠️  Not possible to remove {path}: {e}")
+                print(f"Not possible to remove {path}: {e}")
     if not removed_any:
-        print("No file README to remove.")
+        print("No README files to remove.")
 
 def main():
     parser = argparse.ArgumentParser(description="Download, extract, and clean a Roboflow ZIP dataset.")
-    parser.add_argument("--url", default=DEFAULT_URL, help="URL del file ZIP (segue redirect).")
-    parser.add_argument("--outdir", default=".", help="Cartella di estrazione (default: current dir).")
-    parser.add_argument("--filename", default="roboflow.zip", help="Nome file zip locale (default: roboflow.zip).")
-    parser.add_argument("--overwrite", action="store_true", help="Sovrascrivi file zip se esiste.")
+    parser.add_argument("--url", default=DEFAULT_URL, help="ZIP file URL (follows redirects).")
+    parser.add_argument("--outdir", default=".", help="Extraction folder (default: current dir).")
+    parser.add_argument("--filename", default="roboflow.zip", help="Local zip filename (default: roboflow.zip).")
+    parser.add_argument("--overwrite", action="store_true", help="Overwrite zip if it exists.")
     args = parser.parse_args()
 
     out_dir = Path(args.outdir).expanduser().resolve()
     zip_path = out_dir / args.filename
 
-    # 1️⃣ Scarico
+    # 1 - Download
     if zip_path.exists() and not args.overwrite:
-        print(f"File arlready exists: {zip_path}. Usa --overwrite per riscaricare.")
+        print(f"File already exists: {zip_path}. Use --overwrite to re-download.")
     else:
         print(f"URL: {args.url}")
-        print(f"Download in: {zip_path}")
+        print(f"Downloading to: {zip_path}")
         download(args.url, zip_path)
 
-    # 2️⃣ Estraggo
+    # 2 - Extract
     print(f"Extraction in: {out_dir}")
     try:
         safe_unzip(zip_path, out_dir)
     except zipfile.BadZipFile:
-        raise SystemExit("Archivio ZIP corrotto o non valido.")
+        raise SystemExit("Corrupted or invalid ZIP archive.")
     except Exception as e:
         raise SystemExit(f"Error during the extraction: {e}")
 
-    # 3️⃣ Rimuovo lo zip
+    # 3 - Remove the zip
     try:
         zip_path.unlink()
-        print(f"Rimosso: {zip_path}")
+        print(f"Removed: {zip_path}")
     except Exception as e:
-        print(f"⚠️  Non possible to remove the zip ({e})")
+        print(f"Not possible to remove the zip ({e})")
 
-    # 4️⃣ Rimuovo i README
+    # 4 - Remove READMEs
     remove_readme_files(out_dir)
 
-    print("✅ All Done!")
+    print("All Done!")
 
 if __name__ == "__main__":
     main()
 
-#usage:
-# python 02_download_roboflow.py

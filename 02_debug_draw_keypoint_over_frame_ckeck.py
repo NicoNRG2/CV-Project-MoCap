@@ -1,5 +1,12 @@
 """ 
-DISEGNA KEYPOINT E SCHELTRO DATO UN FRAME IN 2D"""
+
+Draws COCO keypoints and skeleton links on a single image for a chosen image_id. 
+Saves the annotated image and shows a resized preview window.
+
+USAGE:
+> python 02_debug_draw_keypoint_over_frame_ckeck.py --image train/out2_frame_0019_png.rf.aa99af7677dc057dc1f577a91cafef39.jpg --annotations train/_annotations.coco.json --image_id 48 --output temp/02_temp/02_debug_draw_normale.png
+
+"""
 
 import cv2
 import json
@@ -14,11 +21,10 @@ def load_annotations(json_path):
 
 
 def draw_keypoints_on_image(img, ann, skeleton, kp_radius=10, color=(0,255,0)):
-    """
-    Draws keypoints and skeleton connections on the image.
-    ann: single annotation dict with 'keypoints'
-    skeleton: list of [i,j] index pairs (1-based indices)
-    """
+    #    Draws keypoints and skeleton connections on the image.
+    #    ann: single annotation dict with 'keypoints'
+    #    skeleton: list of [i,j] index pairs (1-based indices)
+    
     kpts = ann['keypoints']  # flat list: [x1,y1,v1, x2,y2,v2, ...]
     num = len(kpts) // 3
     pts = []
@@ -78,11 +84,10 @@ def main():
         img = draw_keypoints_on_image(img, ann, skeleton)
 
     # show or save
-   
     cv2.imwrite(args.output, img)
     print(f"Annotated image saved to {args.output}")
   
-    scale = 0.3  # 50% della dimensione originale
+    scale = 0.3  # 30% of the original size
     resized = cv2.resize(img, None, fx=scale, fy=scale)
     cv2.imshow('Keypoints', resized)
     cv2.waitKey(0)
@@ -90,7 +95,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# uso:
-# python 02_debug_draw_keypoint_over_frame_ckeck.py --image train/out2_frame_0019_png.rf.aa99af7677dc057dc1f577a91cafef39.jpg --annotations train/_annotations.coco.json --image_id 48 --output temp/02_temp/02_debug_draw_normale.png
 
