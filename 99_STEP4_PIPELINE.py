@@ -2,27 +2,27 @@ import os
 import sys
 import subprocess
 
-PY = sys.executable  # usa lo stesso interprete con cui lanci questo script
+PY = sys.executable  # use the same interpreter that launches this script
 
 def run(cmd_list):
-    """Esegue un comando (lista di argomenti) e ferma la pipeline in caso di errore."""
-    print("\n🚀 Running:", " ".join(cmd_list))
+    # Runs a command (list of args) and stops the pipeline on error.
+    print("\nRunning:", " ".join(cmd_list))
     result = subprocess.run(cmd_list)
     if result.returncode != 0:
-        print(f"❌ Errore durante l'esecuzione: {' '.join(cmd_list)}")
+        print(f"Error while executing: {' '.join(cmd_list)}")
         sys.exit(result.returncode)
-    print("✅ Completato.")
-    input("👉 Premi INVIO per continuare al prossimo script...")
+    print("Completed.")
+    input("Press ENTER to continue to the next script...")
 
 def ask_keep_id(cam_label: str) -> int:
-    """Chiede interattivamente un intero >0 per keep_id."""
+    # Interactively asks for an integer > 0 to use as keep_id.
     
     while True:
        
-        s = input(f"👉 Inserisci l'id per {cam_label}: ").strip()
+        s = input(f"Enter the id for {cam_label}: ").strip()
         if s.isdigit() and int(s) > 0:
             return int(s)
-        print("⚠️  Valore non valido. Riprova (es. 1, 2, 3...).")
+        print("Invalid value. Try again (e.g., 1, 2, 3...).")
 
 def ensure_dirs():
     os.makedirs("temp/04_temp", exist_ok=True)
@@ -31,10 +31,10 @@ def main():
     ensure_dirs()
     print("=== Starting YOLO Pose + Triangulation Pipeline (Step 04) ===")
 
-    # 1) Divide immagini nelle 4 cartelle
+    # 1) Split images into 4 folders
     run([PY, "04_divide_images.py"])
 
-    # 2) YOLO pose su ciascuna camera
+    # 2) YOLO pose on each camera
     run([PY, "04_yolo_pose.py", "--images", "images_rectified/cam_2",
          "--output", "temp/04_temp/labels2.json", "--weights", "yolo11l-pose.pt",
          "--imgsz", "3840", "--conf", "0.20", "--device", "cuda:0"])
@@ -51,7 +51,7 @@ def main():
          "--output", "temp/04_temp/labels13.json", "--weights", "yolo11l-pose.pt",
          "--imgsz", "3840", "--conf", "0.20", "--device", "cuda:0"])
 
-    # 3) Visual check delle etichette
+    # 3) Visual check of labels
     run([PY, "04_test_labels.py", "--images", "images_rectified/cam_2",
          "--json", "temp/04_temp/labels2.json", "--outdir", "temp/04_temp/cam2"])
 
@@ -65,14 +65,14 @@ def main():
          "--json", "temp/04_temp/labels13.json", "--outdir", "temp/04_temp/cam13"])
 
   
-    print("Entra in /temp/04_temp e per ogni camera (cam2, cam5, cam8, cam13), inserisci l'id del giocatore con la tuta")
-    # 4) INPUT INTERATTIVO: keep_id per le 4 camere
+    print("Go to /temp/04_temp and, for each camera (cam2, cam5, cam8, cam13), enter the player's id (black tracksuit).")
+    # 4) INTERACTIVE INPUT: keep_id for the 4 cameras
     keep2 = ask_keep_id("cam_2")
     keep5 = ask_keep_id("cam_5")
     keep8 = ask_keep_id("cam_8")
     keep13 = ask_keep_id("cam_13")
 
-    # 5) Filtra i JSON tenendo solo il keep_id scelto
+    # 5) Filter JSONs keeping only the selected keep_id
     run([PY, "04_remove_multiple_people.py", "--input", "temp/04_temp/labels2.json",
          "--output", "temp/04_temp/labels2_filtered.json", "--keep_id", str(keep2)])
 
@@ -85,13 +85,13 @@ def main():
     run([PY, "04_remove_multiple_people.py", "--input", "temp/04_temp/labels13.json",
          "--output", "temp/04_temp/labels13_filtered.json", "--keep_id", str(keep13)])
 
-    # 6) Rimuove/Adatta keypoint incompatibili (uno per camera)
+    # 6) Remove/Adapt incompatible keypoints (one per camera)
     run([PY, "04_adapt_keypoint.py", "2"])
     run([PY, "04_adapt_keypoint.py", "5"])
     run([PY, "04_adapt_keypoint.py", "8"])
     run([PY, "04_adapt_keypoint.py", "13"])
 
-    # 7) Merge delle pose (ordine come le rettificate)
+    # 7) Merge poses (same order as rectified)
     run([PY, "04_merge_pose_jsons_like_rectified.py",
          "temp/04_temp/labels2_filtered_adapted.json",
          "temp/04_temp/labels5_filtered_adapted.json",
@@ -99,26 +99,26 @@ def main():
          "temp/04_temp/labels13_filtered_adapted.json",
          "--out", "temp/04_temp/annotations_yolo.json"])
 
-    # 8) Triangolazione
+    # 8) Triangulation
     run([PY, "02_triangulation.py",
          "--input", "temp/04_temp/annotations_yolo.json",
          "--output", "temp/04_temp/04_triangulated_yolo.json"])
 
-    # 9) Animazione YOLO
+    # 9) YOLO animation
     run([PY, "04_animate_yolo.py",
          "--input", "temp/04_temp/04_triangulated_yolo.json",
          "--out", "temp/04_temp/04_yolo.gif", "--fps", "12"])
 
-    # 10) Adatta MoCap (rimozione joint extra)
+    # 10) Adapt MoCap (remove extra joints)
     run([PY, "04_adapt_mocap.py"])
 
-    # 11) Confronto finale (allineamento di similarità)
+    # 11) Final comparison (similarity alignment)
     run([PY, "03_step3compare.py",
          "--mocap", "temp/04_temp/04_adapted_final_mocap.json",
          "--triang", "temp/04_temp/04_triangulated_yolo.json",
          "--align", "similarity"])
 
-    print("\n🎉 Pipeline 04 completata con successo!")
+    print("\nPipeline 04 completed successfully!")
     
 
 if __name__ == "__main__":
