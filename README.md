@@ -16,6 +16,14 @@ pip install -r requirements.txt
 ```
 ---
 
+
+---
+##  Project Structure 
+
+
+
+---
+
 ## 📋 Project Steps
 
 ### 1. Annotate Player’s Poses
