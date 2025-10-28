@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+
+"""
+Merge multiple YOLO-Pose json outputs into a single COCO-like json file,
+suitable for triangulation in 02_triangulation.py.
+
+Usage:
+python 04_merge_pose_jsons_like_rectified.py 04_temp/labels2_filtered_adapted.json 04_temp/labels5_filtered_adapted.json 04_temp/labels8_filtered_adapted.json 04_temp/labels13_filtered_adapted.json --out 04_annotations_yolo.json
+"""
+
 import json
 import argparse
 from pathlib import Path
@@ -9,9 +18,9 @@ def load_yolo_pose_json(path: Path):
 
 def pick_person(persons, target_id=None):
     """
-    Sceglie la persona:
-      - se target_id è dato, usa quella con id==target_id (se presente)
-      - altrimenti prende quella con score più alto
+    Choose the person:
+      - if target_id is provided, use the one with id==target_id (if present)
+      - otherwise pick the one with the highest score
     """
     if not persons:
         return None
@@ -24,12 +33,12 @@ def pick_person(persons, target_id=None):
 
 def flatten_keypoints(kpts_xyz, conf_threshold=0.5):
     """
-    Converte da [[x,y,conf], ...] a [x,y,v, x,y,v, ...] con v in {0,2}
-    v=2 se conf >= threshold, altrimenti v=1
+    Convert from [[x,y,conf], ...] to [x,y,v, x,y,v, ...] with v in {0,2}
+    v=2 if conf >= threshold, otherwise v=1
     """
     flat = []
     for trip in kpts_xyz:
-        # gestisci keypoints incompleti con robustezza
+        # handle incomplete keypoints robustly
         if trip is None or len(trip) < 2:
             flat.extend([0.0, 0.0, 0])   # “missing”
             continue
@@ -54,7 +63,7 @@ def merge_inputs(inputs, out_path, person_id=2, conf_threshold=0.5, dedup=True):
             if not file_name:
                 continue
             if dedup and file_name in seen_files:
-                # già aggiunto da un altro JSON
+                # already added from another JSON
                 continue
 
             persons = img.get("persons", [])
@@ -65,7 +74,7 @@ def merge_inputs(inputs, out_path, person_id=2, conf_threshold=0.5, dedup=True):
             kpts_xyz = person.get("keypoints", [])
             flat = flatten_keypoints(kpts_xyz, conf_threshold=conf_threshold)
 
-            # Costruisci record minimal compatibile con 02_triangulation.py
+            # Build a minimal record compatible with 02_triangulation.py
             images.append({
                 "id": img_id,
                 "file_name": file_name,
@@ -76,7 +85,7 @@ def merge_inputs(inputs, out_path, person_id=2, conf_threshold=0.5, dedup=True):
                 "id": ann_id,
                 "image_id": img_id,
                 "keypoints": flat,
-                # opzionali, NON necessari per la triangolazione:
+                # optional, NOT required for triangulation:
                 # "num_keypoints": len(kpts_xyz),
                 # "bbox": person.get("bbox"),
             })
@@ -88,7 +97,7 @@ def merge_inputs(inputs, out_path, person_id=2, conf_threshold=0.5, dedup=True):
     merged = {
         "images": images,
         "annotations": annotations
-        # "categories": [...]  # non necessario per lo script di triangolazione
+        # "categories": [...]  # not required for the triangulation script
     }
 
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
@@ -114,5 +123,3 @@ if __name__ == "__main__":
         conf_threshold=args.conf_th,
         dedup=(not args.no_dedup),
     )
-
-# python 04_merge_pose_jsons_like_rectified.py 04_temp/labels2_filtered_adapted.json 04_temp/labels5_filtered_adapted.json 04_temp/labels8_filtered_adapted.json 04_temp/labels13_filtered_adapted.json --out 04_annotations_yolo.json

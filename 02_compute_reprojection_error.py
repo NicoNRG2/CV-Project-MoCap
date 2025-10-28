@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 Compares original 2D COCO annotations with reprojected ones. 
 Computes global and per-joint MSE/MPJPE using only keypoints with visibility v=2.

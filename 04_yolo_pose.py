@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 """
-YOLOv11-Pose batch inferencer con export JSON e tracking semplice per mantenere lo stesso person ID tra frame.
+YOLOv11-Pose batch inferencer with JSON export and simple tracking to keep the same person ID across frames.
 
-Uso:
+Usage:
   python 04_yolo_pose.py --images images_rectified/cam_13 --output 04_labels13.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20
 
-Opzioni:
-  --no-track      Disattiva il tracking per gli ID persistenti
-  --device cuda:0 Usa la GPU se disponibile (altrimenti "cpu")
+Options:
+  --no-track      Disable tracking for persistent IDs
+  --device cuda:0 Use GPU if available (otherwise "cpu")
 """
 
 import argparse
@@ -25,10 +25,10 @@ from tqdm import tqdm
 from ultralytics import YOLO
 
 
-# ------------------------- Util -------------------------
+# ------------------------- Utils -------------------------
 def iou_xyxy(a, b) -> float:
     """
-    IoU tra due bbox in formato [x1, y1, x2, y2].
+    IoU between two bounding boxes in [x1, y1, x2, y2] format.
     """
     xA = max(a[0], b[0])
     yA = max(a[1], b[1])
@@ -48,8 +48,8 @@ def greedy_match(prev_boxes: List[List[float]],
                  cur_boxes: List[List[float]],
                  iou_thr: float = 0.4) -> List[Tuple[int, int]]:
     """
-    Abbina in modo greedy i box di frame t-1 con quelli di frame t usando IoU.
-    Ritorna una lista di tuple (idx_prev, idx_cur).
+    Greedily matches boxes from frame t-1 to frame t using IoU.
+    Returns a list of tuples (idx_prev, idx_cur).
     """
     matches = []
     if not prev_boxes or not cur_boxes:
@@ -58,7 +58,7 @@ def greedy_match(prev_boxes: List[List[float]],
     used_prev = set()
     used_cur = set()
 
-    # Calcola tutte le coppie con IoU
+    # Compute all IoU pairs
     pairs = []
     for i, pb in enumerate(prev_boxes):
         for j, cb in enumerate(cur_boxes):
@@ -66,7 +66,7 @@ def greedy_match(prev_boxes: List[List[float]],
             if iou >= iou_thr:
                 pairs.append((iou, i, j))
 
-    # Ordina per IoU desc e prendi greedy
+    # Sort by IoU descending and match greedily
     pairs.sort(reverse=True, key=lambda x: x[0])
 
     for iou, i, j in pairs:
@@ -82,37 +82,37 @@ def greedy_match(prev_boxes: List[List[float]],
 # ------------------------- Main -------------------------
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--images", required=True, help="Cartella contenente le immagini")
-    ap.add_argument("--output", required=True, help="Percorso del file JSON di output")
-    ap.add_argument("--weights", default="yolo11l-pose.pt", help="Peso YOLO pose (es. yolo11l-pose.pt)")
-    ap.add_argument("--imgsz", type=int, default=3840, help="Dimensione di input (lato lungo)")
+    ap.add_argument("--images", required=True, help="Folder containing the images")
+    ap.add_argument("--output", required=True, help="Path to the output JSON file")
+    ap.add_argument("--weights", default="yolo11l-pose.pt", help="YOLO pose weights (e.g., yolo11l-pose.pt)")
+    ap.add_argument("--imgsz", type=int, default=3840, help="Input size (longest side)")
     ap.add_argument("--conf", type=float, default=0.25, help="Confidence threshold")
-    ap.add_argument("--device", default=None, help='Es. "cuda:0" o "cpu" (default: auto)')
-    ap.add_argument("--no-track", action="store_true", help="Disattiva tracking (ID non persistenti)")
+    ap.add_argument("--device", default=None, help='E.g., "cuda:0" or "cpu" (default: auto)')
+    ap.add_argument("--no-track", action="store_true", help="Disable tracking (non-persistent IDs)")
     args = ap.parse_args()
 
     img_dir = Path(args.images)
-    assert img_dir.is_dir(), f"Cartella non trovata: {img_dir}"
+    assert img_dir.is_dir(), f"Folder not found: {img_dir}"
 
-    # Raccogli immagini (ordina alfabeticamente -> utile sulle sequenze)
+    # Collect images (alphabetical order -> useful for sequences)
     exts = ("*.jpg", "*.jpeg", "*.png", "*.bmp", "*.tif", "*.tiff")
     img_paths = []
     for ext in exts:
         img_paths.extend(glob.glob(str(img_dir / ext)))
     img_paths = sorted(img_paths)
     if not img_paths:
-        raise FileNotFoundError(f"Nessuna immagine trovata in {img_dir}")
+        raise FileNotFoundError(f"No images found in {img_dir}")
 
-    # Carica modello
+    # Load model
     model = YOLO(args.weights)
 
-    # Strutture per tracking
+    # Tracking structures
     tracking_enabled = not args.no_track
     next_track_id = 1
     prev_boxes = []
     prev_ids = []
 
-    # JSON di output
+    # Output JSON structure
     output = {
         "meta": {
             "model": args.weights,
@@ -126,8 +126,8 @@ def main():
 
     # Inference loop
     for idx, img_path in enumerate(tqdm(img_paths, desc="Processing")):
-        # Se vuoi un print manuale dei progressi, mettilo qui:
-        # print(f"[DEBUG] Processando immagine {idx+1}/{len(img_paths)}: {img_path}")
+        # For manual debug print, uncomment:
+        # print(f"[DEBUG] Processing image {idx+1}/{len(img_paths)}: {img_path}")
 
         results = model.predict(
             img_path,
@@ -138,7 +138,7 @@ def main():
         )
 
         if len(results) == 0:
-            # Non dovrebbe succedere, ma gestiamo ugualmente
+            # Should not happen, but handle anyway
             output["images"].append({
                 "file": os.path.basename(img_path),
                 "width": None,
@@ -152,37 +152,37 @@ def main():
         H, W = res.orig_shape
         persons = []
 
-        # Estrai bbox, conf e keypoints
-        # boxes.xyxy: (N,4) — boxes.conf: (N,) — keypoints.data: (N,K,3) con (x,y,vis)
+        # Extract bbox, confidence, and keypoints
+        # boxes.xyxy: (N,4) — boxes.conf: (N,) — keypoints.data: (N,K,3) with (x,y,vis)
         bboxes = res.boxes.xyxy.cpu().numpy().tolist() if res.boxes is not None else []
         scores = res.boxes.conf.cpu().numpy().tolist() if res.boxes is not None else []
         kpts = res.keypoints.data.cpu().numpy().tolist() if res.keypoints is not None else []
 
-        # Allinea lunghezze
+        # Align lengths
         n = min(len(bboxes), len(scores), len(kpts))
 
         cur_boxes = bboxes[:n]
         cur_scores = scores[:n]
         cur_kpts = kpts[:n]
 
-        # Tracking semplice via IoU
+        # Simple IoU-based tracking
         cur_ids = [None] * n
         if tracking_enabled and prev_boxes:
             matches = greedy_match(prev_boxes, cur_boxes, iou_thr=0.4)
             for i_prev, j_cur in matches:
                 cur_ids[j_cur] = prev_ids[i_prev]
 
-        # Assegna nuovi ID ai non abbinati
+        # Assign new IDs to unmatched detections
         if tracking_enabled:
             for j in range(n):
                 if cur_ids[j] is None:
                     cur_ids[j] = next_track_id
                     next_track_id += 1
         else:
-            # Se tracking off, niente ID persistenti
+            # If tracking disabled, no persistent IDs
             cur_ids = [None] * n
 
-        # Costruisci la lista "persons"
+        # Build "persons" list
         for j in range(n):
             persons.append({
                 "id": cur_ids[j],
@@ -191,7 +191,7 @@ def main():
                 "keypoints": [[float(x), float(y), float(v)] for (x, y, v) in cur_kpts[j]]
             })
 
-        # Append per immagine
+        # Append per image
         output["images"].append({
             "file": os.path.basename(img_path),
             "width": int(W),
@@ -199,17 +199,17 @@ def main():
             "persons": persons
         })
 
-        # Aggiorna stato tracking
+        # Update tracking state
         prev_boxes = cur_boxes
         prev_ids = cur_ids
 
-    # Salva JSON
+    # Save JSON
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f"\nDone. JSON scritto in: {out_path.resolve()}")
+    print(f"\nDone. JSON written to: {out_path.resolve()}")
 
 
 if __name__ == "__main__":

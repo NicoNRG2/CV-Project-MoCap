@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Animate 3D or 2D keypoints from a JSON file containing triangulated keypoints.
+The animation can be saved as an MP4 video (requires ffmpeg) or as a GIF.
+
+Usage:
+python 04_animate_yolo.py --input temp/04_temp/04_triangulated_yolo.json --out temp/04_temp/04_yolo.gif --fps 12
+"""
 import json
 import argparse
 from pathlib import Path
@@ -10,13 +17,13 @@ from math import cos, sin, radians
 from matplotlib.animation import FuncAnimation, FFMpegWriter, PillowWriter
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 
-# NEW: imports per apertura file
+# NEW: imports for file opening
 import os
 import sys
 import platform
 import subprocess
 
-# --- JOINTS (13) nell'ordine richiesto ---
+# --- JOINTS (13) in the required order ---
 JOINTS = [
     "Nose",
     "LShoulder", "RShoulder",
@@ -27,7 +34,7 @@ JOINTS = [
     "LAnkle", "RAnkle",
 ]
 
-# Nessuna connessione: vogliamo solo i punti
+# No connections: we only want to display points
 BONES = []
 
 
@@ -35,7 +42,7 @@ def load_frames(path):
     with open(path, "r") as f:
         data = json.load(f)
 
-    # Se contiene il campo "skeleton_3d", entra nel sotto-dizionario
+    # If it contains the field "skeleton_3d", enter the sub-dictionary
     if "skeleton_3d" in data:
         data = data["skeleton_3d"]
 
@@ -51,13 +58,13 @@ def load_frames(path):
     nJ = len(JOINTS)
     frames = [f for f in frames if f.shape == (nJ, 3)]
     if not frames:
-        raise ValueError(f"Nessun frame valido nel JSON (attesi {nJ} joint per frame).")
+        raise ValueError(f"No valid frames found in JSON (expected {nJ} joints per frame).")
 
     return frames
 
 
 def rotate_frames_z(frames, deg=-90.0):
-    """Ruota ogni frame di 'deg' gradi attorno a Z (default: -90°)."""
+    """Rotate each frame by 'deg' degrees around the Z axis (default: -90°)."""
     th = radians(deg)
     Rz = np.array([
         [cos(th), -sin(th), 0.0],
@@ -118,25 +125,25 @@ def project_points(p, view):
         return p[:, [0, 2]]
     if view == "yz":
         return p[:, [1, 2]]
-    raise ValueError("view non valida")
+    raise ValueError("invalid view")
 
 
-# NEW: apertura con app di default (Windows/macOS/Linux/WSL)
+# NEW: open with default app (Windows/macOS/Linux/WSL)
 def open_with_default_app(path: Path):
     try:
         p = str(path)
         sysname = platform.system().lower()
         release = platform.uname().release.lower()
 
-        # WSL detection
+        # Detect WSL
         is_wsl = ("microsoft" in release) or ("wsl" in release)
 
         if is_wsl:
-            # wslview apre con l'app di Windows se disponibile
+            # wslview opens with the default Windows app if available
             ret = subprocess.run(["wslview", p], check=False)
             if ret.returncode == 0:
                 return
-            # fallback a xdg-open
+            # fallback to xdg-open
             subprocess.run(["xdg-open", p], check=False)
             return
 
@@ -147,7 +154,7 @@ def open_with_default_app(path: Path):
         else:  # Linux/Unix
             subprocess.run(["xdg-open", p], check=False)
     except Exception as e:
-        print(f"[INFO] Impossibile aprire automaticamente il file: {e}")
+        print(f"[INFO] Unable to open the file automatically: {e}")
 
 
 def animate(frames, fps, out, view, downsample, max_frames, point_size):
@@ -156,14 +163,14 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
         frames = frames[:max_frames]
     nF = len(frames)
 
-    # Bounds stabili
+    # Stable bounds
     mins, maxs = compute_bounds(frames)
 
     fig = plt.figure(figsize=(7, 7))
     ax = make_axes(fig, view, (mins, maxs))
     ax.set_title("Triangulated Keypoints (YOLO)")
 
-    # Inizializzazione solo punti
+    # Initialize points only
     p0 = frames[0]
     if view == "3d":
         scat = ax.scatter(p0[:, 0], p0[:, 1], p0[:, 2], s=point_size)
@@ -200,7 +207,7 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
                 writer = FFMpegWriter(fps=int(fps / max(1, downsample)), bitrate=3000)
                 anim.save(str(out), writer=writer, dpi=120)
             except Exception as e:
-                print(f"[INFO] MP4 fallito ({e}). Salvo GIF…")
+                print(f"[INFO] MP4 export failed ({e}). Saving as GIF instead…")
                 out = out.with_suffix(".gif")
                 anim.save(
                     str(out),
@@ -221,41 +228,41 @@ def animate(frames, fps, out, view, downsample, max_frames, point_size):
                 dpi=120,
             )
     finally:
-        # NEW: chiudi la figura per liberare il file prima di aprirlo
+        # NEW: close the figure to free the file before opening
         plt.close(fig)
 
-    print(f"[OK] Salvato: {out}")
-    # NEW: prova ad aprire il file creato
+    print(f"[OK] Saved: {out}")
+    # NEW: try to open the created file
     open_with_default_app(out)
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Animazione 3D/2D keypoints (solo pallini) da JSON")
+    ap = argparse.ArgumentParser(description="3D/2D keypoints animation (points only) from JSON")
     ap.add_argument(
         "--input", "-i", type=str, default="triangulated_3d_keypoints.json",
-        help="Percorso al file JSON"
+        help="Path to the JSON file"
     )
     ap.add_argument(
         "--out", "-o", type=str, default="keypoints_animation.mp4",
-        help="Output (mp4/gif/png). mp4 richiede ffmpeg."
+        help="Output file (mp4/gif/png). mp4 requires ffmpeg."
     )
-    ap.add_argument("--fps", type=int, default=100, help="Frame rate di acquisizione")
-    ap.add_argument("--downsample", type=int, default=1, help="Usa 2,4,10 per alleggerire")
-    ap.add_argument("--max-frames", type=int, default=0, help="0 = tutti, >0 = limita")
+    ap.add_argument("--fps", type=int, default=100, help="Acquisition frame rate")
+    ap.add_argument("--downsample", type=int, default=1, help="Use 2,4,10 to reduce frames")
+    ap.add_argument("--max-frames", type=int, default=0, help="0 = all frames, >0 = limit number")
     ap.add_argument(
         "--view", choices=["3d", "xy", "xz", "yz"], default="3d",
-        help="Vista 3D o proiezione 2D"
+        help="3D view or 2D projection"
     )
-    ap.add_argument("--point-size", type=float, default=20.0, help="Dimensione marker giunti")
+    ap.add_argument("--point-size", type=float, default=20.0, help="Joint marker size")
     ap.add_argument(
         "--rotate-z", type=float, default=-90.0,
-        help="Rotazione gradi attorno a Z (default -90). Usa 0 per nessuna rotazione."
+        help="Rotation in degrees around Z axis (default -90). Use 0 for no rotation."
     )
     args = ap.parse_args()
 
     frames = load_frames(args.input)
     if abs(args.rotate_z) > 1e-9:
-        frames = rotate_frames_z(frames, deg=args.rotate_z)  # rotazione opzionale (default -90°)
+        frames = rotate_frames_z(frames, deg=args.rotate_z)  # optional rotation (default -90°)
     animate(
         frames=frames,
         fps=args.fps,

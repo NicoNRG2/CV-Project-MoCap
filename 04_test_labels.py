@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 """
-Visualizza le etichette YOLO Pose (bbox, ID, keypoints, skeleton) sopra le immagini.
+Visualize YOLO Pose labels (bbox, ID, keypoints, skeleton) on top of images.
 
-Uso:
+Usage:
   python 04_test_labels.py --images ./images_rectified/cam_13 --json 04_labels13.json --outdir ./04_temp13
 
-Note:
-- Il JSON è quello prodotto dallo script di inferenza (campo "images" con "persons":[{id,score,bbox,keypoints}]).
-- I keypoint sono in formato [x, y, v], con v = visibilità (0/1 o [0..2]): disegniamo solo se v > soglia.
+Notes:
+- The JSON file is the one produced by the inference script (field "images" with "persons":[{id,score,bbox,keypoints}]).
+- Keypoints are in [x, y, v] format, with v = visibility (0/1 or [0..2]); only points with v > threshold are drawn.
 """
 
 import argparse
@@ -21,13 +21,13 @@ import numpy as np
 from tqdm import tqdm
 
 
-# Connessioni skeleton per modello COCO-17 (ordine COCO standard).
-# Indici (0..16): 0-Nose,1-L.Eye,2-R.Eye,3-L.Ear,4-R.Ear,5-L.Shoulder,6-R.Shoulder,
+# Skeleton connections for the COCO-17 model (standard COCO order).
+# Indices (0..16): 0-Nose,1-L.Eye,2-R.Eye,3-L.Ear,4-R.Ear,5-L.Shoulder,6-R.Shoulder,
 # 7-L.Elbow,8-R.Elbow,9-L.Wrist,10-R.Wrist,11-L.Hip,12-R.Hip,13-L.Knee,14-R.Knee,15-L.Ankle,16-R.Ankle
 COCO_EDGES = [
-    (5, 6), (5, 7), (7, 9), (6, 8), (8,10),  # braccia + spalle
-    (11,12), (5,11), (6,12), (11,13), (13,15), (12,14), (14,16),  # bacino+gambe
-    (0,1), (0,2), (1,3), (2,4)  # testa/occhi/orecchie
+    (5, 6), (5, 7), (7, 9), (6, 8), (8,10),  # arms + shoulders
+    (11,12), (5,11), (6,12), (11,13), (13,15), (12,14), (14,16),  # pelvis + legs
+    (0,1), (0,2), (1,3), (2,4)  # head/eyes/ears
 ]
 
 
@@ -43,14 +43,14 @@ def draw_pose(
 ):
     h, w = img.shape[:2]
 
-    # bbox
+    # Bounding box
     if bbox is not None:
         x1, y1, x2, y2 = [int(round(v)) for v in bbox]
         x1 = max(0, min(x1, w - 1)); x2 = max(0, min(x2, w - 1))
         y1 = max(0, min(y1, h - 1)); y2 = max(0, min(y2, h - 1))
         cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 255), thickness)
 
-        # etichetta (ID + conf)
+        # Label (ID + confidence)
         label = []
         if pid is not None: label.append(f"ID {pid}")
         if score is not None: label.append(f"{score:.2f}")
@@ -60,10 +60,10 @@ def draw_pose(
             cv2.rectangle(img, (x1, y1 - th - baseline - 4), (x1 + tw + 6, y1), (0, 255, 255), -1)
             cv2.putText(img, text, (x1 + 3, y1 - 4), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2, cv2.LINE_AA)
 
-    # keypoints + skeleton
+    # Keypoints + skeleton
     if keypoints is not None and len(keypoints) >= 17:
         pts = np.array(keypoints, dtype=float)  # (17, 3) -> x,y,v
-        # linee
+        # Lines
         for i, j in COCO_EDGES:
             vi = pts[i, 2]; vj = pts[j, 2]
             if vi > kp_vis_thr and vj > kp_vis_thr:
@@ -71,7 +71,7 @@ def draw_pose(
                 pj = (int(round(pts[j, 0])), int(round(pts[j, 1])))
                 cv2.line(img, pi, pj, (0, 180, 255), thickness)
 
-        # punti
+        # Points
         for k in range(pts.shape[0]):
             x, y, v = pts[k]
             if v > kp_vis_thr:
@@ -80,13 +80,13 @@ def draw_pose(
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--images", required=True, help="Cartella immagini originali")
-    ap.add_argument("--json", required=True, help="File JSON con etichette (output dallo script YOLO)")
-    ap.add_argument("--outdir", required=True, help="Cartella di output per immagini annotate")
-    ap.add_argument("--kp-vis-thr", type=float, default=0.5, help="Soglia di visibilità keypoint")
-    ap.add_argument("--thickness", type=int, default=2, help="Spessore linee bbox/skeleton")
-    ap.add_argument("--radius", type=int, default=3, help="Raggio dei keypoint")
-    ap.add_argument("--show", action="store_true", help="Mostra le immagini durante l'elaborazione")
+    ap.add_argument("--images", required=True, help="Folder containing the original images")
+    ap.add_argument("--json", required=True, help="JSON file with labels (output from YOLO script)")
+    ap.add_argument("--outdir", required=True, help="Output folder for annotated images")
+    ap.add_argument("--kp-vis-thr", type=float, default=0.5, help="Keypoint visibility threshold")
+    ap.add_argument("--thickness", type=int, default=2, help="Line thickness for bbox/skeleton")
+    ap.add_argument("--radius", type=int, default=3, help="Radius for keypoints")
+    ap.add_argument("--show", action="store_true", help="Display images during processing")
     args = ap.parse_args()
 
     img_dir = Path(args.images)
@@ -98,7 +98,7 @@ def main():
 
     images = data.get("images", [])
     if not images:
-        raise ValueError("JSON non contiene 'images' o è vuoto.")
+        raise ValueError("JSON does not contain 'images' or it is empty.")
 
     for item in tqdm(images, desc="Annotating"):
         fname = item.get("file")
@@ -106,16 +106,16 @@ def main():
             continue
         img_path = img_dir / fname
         if not img_path.is_file():
-            print(f"[WARN] Immagine mancante: {img_path}")
+            print(f"[WARN] Missing image: {img_path}")
             continue
 
         img = cv2.imread(str(img_path))
         if img is None:
-            print(f"[WARN] Impossibile leggere: {img_path}")
+            print(f"[WARN] Cannot read image: {img_path}")
             continue
 
         persons = item.get("persons", [])
-        # Disegna ogni persona
+        # Draw each person
         for p in persons:
             bbox = p.get("bbox")
             kpts = p.get("keypoints")
@@ -132,23 +132,23 @@ def main():
                 radius=args.radius
             )
 
-        # Salva
+        # Save
         out_path = out_dir / fname
         out_path.parent.mkdir(parents=True, exist_ok=True)
         cv2.imwrite(str(out_path), img)
 
-        # Mostra (opzionale)
+        # Optional display
         if args.show:
             cv2.imshow("Pose Annotations", img)
             key = cv2.waitKey(1)
-            # premi 'q' per uscire
+            # press 'q' to quit
             if key & 0xFF == ord('q'):
                 break
 
     if args.show:
         cv2.destroyAllWindows()
 
-    print(f"Fatto! Immagini annotate salvate in: {out_dir.resolve()}")
+    print(f"Done! Annotated images saved to: {out_dir.resolve()}")
 
 
 if __name__ == "__main__":

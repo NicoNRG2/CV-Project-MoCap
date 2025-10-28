@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Animates a 3D skeleton (or 2D projections) from a JSON of joint positions, with optional fixed -90° Z-rotation,
 and exports to MP4/GIF. Supports downsampling, frame limits, and auto-opening the exported file.

@@ -1,24 +1,31 @@
+"""
+Script to filter people with a specific ID from an annotation JSON file.
+
+Usage:
+python 04_remove_multiple_people.py --input path/to/input.json --output path/to/output.json --keep_id 1
+"""
+
 import json
 from pathlib import Path
 import argparse
 
-# === PARSER DEGLI ARGOMENTI ===
-parser = argparse.ArgumentParser(description="Filtra persone con uno specifico ID da un file JSON di annotazioni.")
-parser.add_argument("--input", type=Path, help="Percorso del file JSON di input")
-parser.add_argument("--output", type=Path, help="Percorso del file JSON di output")
-parser.add_argument("--keep_id", type=int, help="ID della persona da mantenere (es. 1 o 2)")
+# === ARGUMENT PARSER ===
+parser = argparse.ArgumentParser(description="Filter people with a specific ID from an annotation JSON file.")
+parser.add_argument("--input", type=Path, help="Path to the input JSON file")
+parser.add_argument("--output", type=Path, help="Path to the output JSON file")
+parser.add_argument("--keep_id", type=int, help="Person ID to keep (e.g., 1 or 2)")
 
 args = parser.parse_args()
 
-# === CARICA JSON ===
+# === LOAD JSON ===
 with open(args.input, "r") as f:
     data = json.load(f)
 
-# === FILTRA LE PERSONE CON ID SPECIFICATO ===
+# === FILTER PEOPLE WITH THE SPECIFIED ID ===
 filtered_images = []
 for img in data["images"]:
     persons_filtered = [p for p in img["persons"] if p.get("id") == args.keep_id]
-    if persons_filtered:  # aggiungi solo immagini dove esiste almeno una persona con l'ID scelto
+    if persons_filtered:  # add only images that contain at least one person with the selected ID
         filtered_images.append({
             "file": img["file"],
             "width": img["width"],
@@ -26,16 +33,16 @@ for img in data["images"]:
             "persons": persons_filtered
         })
 
-# === CREA IL NUOVO JSON ===
+# === CREATE THE NEW JSON ===
 filtered_data = {
     "meta": data.get("meta", {}),
     "images": filtered_images
 }
 
-# === SALVA SU FILE ===
+# === SAVE TO FILE ===
 with open(args.output, "w") as f:
     json.dump(filtered_data, f, indent=2)
 
-print(f"✅ File salvato in: {args.output}")
-print(f"📸 Immagini totali nel file originale: {len(data['images'])}")
-print(f"📸 Immagini con id={args.keep_id}: {len(filtered_images)}")
+print(f"✅ File saved to: {args.output}")
+print(f"📸 Total images in the original file: {len(data['images'])}")
+print(f"📸 Images with id={args.keep_id}: {len(filtered_images)}")

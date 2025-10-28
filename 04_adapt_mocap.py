@@ -1,3 +1,10 @@
+"""
+remove incompatible keypoints and reorder keypoints in the mocap json file
+
+Usage:
+python 04_adapt_mocap.py
+"""
+
 import json
 from pathlib import Path
 
@@ -5,7 +12,7 @@ from pathlib import Path
 input_path = Path("temp/03_temp/03_final_mocap.json")
 output_path = Path("temp/04_temp/04_adapted_final_mocap.json")
 
-# === Joint list originale (ordine del file) ===
+# === Original joint list (order in the file) ===
 JOINTS_ORIG = [
     'Hips', 'Spine', 'Neck', 'Head',
     'LShoulder', 'LElbow', 'LHand',
@@ -14,10 +21,10 @@ JOINTS_ORIG = [
     'RHip', 'RKnee', 'RAnkle', 'RFoot'
 ]
 
-# === Joint da rimuovere ===
+# === Joints to remove ===
 REMOVE = {'Hips', 'Spine', 'Neck', 'LFoot', 'RFoot'}
 
-# === Nuovo ordine richiesto ===
+# === New desired joint order ===
 JOINTS_NEW_ORDER = [
     'Head',
     'LShoulder', 'RShoulder',
@@ -28,14 +35,14 @@ JOINTS_NEW_ORDER = [
     'LAnkle', 'RAnkle'
 ]
 
-# === Creiamo mappa (joint -> indice originale) ===
+# === Create a mapping (joint -> original index) ===
 idx_map = {name: i for i, name in enumerate(JOINTS_ORIG)}
 
-# === Carichiamo il JSON ===
+# === Load JSON file ===
 with open(input_path, 'r') as f:
     data = json.load(f)
 
-# === Creiamo nuovo dizionario filtrato ===
+# === Create a new filtered dictionary ===
 filtered_data = {}
 
 for frame, coords in data.items():
@@ -45,8 +52,8 @@ for frame, coords in data.items():
             new_frame.append(coords[idx_map[joint]])
     filtered_data[frame] = new_frame
 
-# === Salviamo ===
+# === Save output ===
 with open(output_path, 'w') as f:
     json.dump(filtered_data, f, indent=2)
 
-print(f"✅ File salvato in: {output_path}")
+print(f"✅ File saved to: {output_path}")
