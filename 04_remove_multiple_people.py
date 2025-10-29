@@ -44,6 +44,6 @@ filtered_data = {
 with open(args.output, "w") as f:
     json.dump(filtered_data, f, indent=2)
 
-print(f"✅ File saved to: {args.output}")
-print(f"📸 Total images in the original file: {len(data['images'])}")
-print(f"📸 Images with id={args.keep_id}: {len(filtered_images)}")
+print(f"File saved to: {args.output}")
+print(f"Total images in the original file: {len(data['images'])}")
+print(f"Images with id={args.keep_id}: {len(filtered_images)}")

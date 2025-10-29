@@ -69,4 +69,4 @@ for image in data.get("images", []):
 with open(output_path, "w") as f:
     json.dump(data, f, indent=2)
 
-print(f"✅ File saved to: {output_path}")
+print(f"File saved to: {output_path}")

@@ -57,4 +57,4 @@ for frame, coords in data.items():
 with open(output_path, 'w') as f:
     json.dump(filtered_data, f, indent=2)
 
-print(f"✅ File saved to: {output_path}")
+print(f"File saved to: {output_path}")
