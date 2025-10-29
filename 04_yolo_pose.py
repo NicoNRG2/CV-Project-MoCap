@@ -1,12 +1,13 @@
 """
 YOLOv11-Pose batch inferencer with JSON export and simple tracking to keep the same person ID across frames.
 
-Usage:
-  python 04_yolo_pose.py --images images_rectified/cam_13 --output 04_labels13.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20
+USAGE:
+> python 04_yolo_pose.py --images images_rectified/cam_2 --output temp/04_temp/labels2.json --weights yolo11l-pose.pt --imgsz 3840 --conf 0.20 --device cuda:0
 
 Options:
   --no-track      Disable tracking for persistent IDs
   --device cuda:0 Use GPU if available (otherwise "cpu")
+  
 """
 
 import argparse
@@ -84,7 +85,7 @@ def main():
     ap.add_argument("--weights", default="yolo11l-pose.pt", help="YOLO pose weights (e.g., yolo11l-pose.pt)")
     ap.add_argument("--imgsz", type=int, default=3840, help="Input size (longest side)")
     ap.add_argument("--conf", type=float, default=0.25, help="Confidence threshold")
-    ap.add_argument("--device", default=None, help='E.g., "cuda:0" or "cpu" (default: auto)')
+    ap.add_argument("--device", default="auto", help='E.g., "cuda:0" or "cpu" (default: auto)')
     ap.add_argument("--no-track", action="store_true", help="Disable tracking (non-persistent IDs)")
     args = ap.parse_args()
 

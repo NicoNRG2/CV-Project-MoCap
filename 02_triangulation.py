@@ -3,7 +3,7 @@ Triangulates 2D keypoints from multi-view YOLO annotations into 3D
 using camera projection matrices loaded from per-camera calibration files. Outputs a JSON with per-frame 3D joints.
 
 USAGE:
-> python 02_triangulation.py --input path/to/annotations.json --output path/to/skeleton_3d.json
+> python 02_triangulation.py --input temp/02_temp/02_annotations.coco.rectified.json --output temp/02_temp/02_triangulated_3d_skeleton.json
 
 """
 

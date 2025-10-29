@@ -2,9 +2,11 @@
 Animate 3D or 2D keypoints from a JSON file containing triangulated keypoints.
 The animation can be saved as an MP4 video (requires ffmpeg) or as a GIF.
 
-Usage:
-python 04_animate_yolo.py --input temp/04_temp/04_triangulated_yolo.json --out temp/04_temp/04_yolo.gif --fps 12
+USAGE:
+> python 04_animate_yolo.py --input temp/04_temp/04_triangulated_yolo.json --out temp/04_temp/04_yolo.gif --fps 12
+
 """
+
 import json
 import argparse
 from pathlib import Path

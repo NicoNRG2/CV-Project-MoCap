@@ -1,8 +1,9 @@
 """
 Script to filter people with a specific ID from an annotation JSON file.
 
-Usage:
-python 04_remove_multiple_people.py --input path/to/input.json --output path/to/output.json --keep_id 1
+USAGE:
+> python 04_remove_multiple_people.py --input temp/04_temp/labels2.json --output temp/04_temp/labels2_filtered.json --keep_id [id_number]
+    n.b. Before this comands, go to temp/04_temp and, for each camera (cam2, cam5, cam8, cam13), check the player's id (black tracksuit): put it as [id_number].
 """
 
 import json

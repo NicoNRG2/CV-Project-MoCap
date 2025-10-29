@@ -3,7 +3,8 @@ Plots a single 3D skeleton frame from a triangulated JSON, highlighting the head
 Saves a PNG preview and shows the figure.
 
 USAGE:
-> python3 02_plot_3D_skeleton.py [frame_number]
+> python 02_plot_3d_skeleton.py [frame_number]
+    n.b. frame_number can be from 1 to 48
 
 """
 

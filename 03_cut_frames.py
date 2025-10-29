@@ -3,7 +3,7 @@ Cuts a range of frames from a motion capture JSON file,
 saves only the selected frames to a new JSON, and reports missing frames if any.
 
 USAGE:
-> python3 03_cut_frames.py
+> python 03_cut_frames.py  
 
 """
 

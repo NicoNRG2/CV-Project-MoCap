@@ -3,6 +3,7 @@ This Python script automatically sorts and moves images from a folder (default: 
 
 USAGE:
 > python 04_divide_images.py
+
 """
 import argparse
 import re

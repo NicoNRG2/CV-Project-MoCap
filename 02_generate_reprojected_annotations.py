@@ -3,7 +3,7 @@ Reprojects a 3D skeleton into each camera using calibration parameters and gener
 Reads rectified images metadata, triangulated 3D joints, and camera calibrations, then saves a new annotations JSON.
 
 USAGE:
-> python3 02_generate_reprojected_annotations.py
+> python 02_generate_reprojected_annotations.py
 
 """
 

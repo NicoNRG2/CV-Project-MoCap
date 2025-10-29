@@ -1,3 +1,12 @@
+"""
+This script automates the execution of the step3 pipeline scripts
+
+USAGE:
+> python 99_STEP3_PIPELINE.py
+
+"""
+
+
 import subprocess
 import sys
 

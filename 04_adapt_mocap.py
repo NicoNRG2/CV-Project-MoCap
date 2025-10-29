@@ -1,8 +1,9 @@
 """
 remove incompatible keypoints and reorder keypoints in the mocap json file
 
-Usage:
-python 04_adapt_mocap.py
+USAGE:
+> python 04_adapt_mocap.py 
+
 """
 
 import json

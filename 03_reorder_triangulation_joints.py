@@ -3,7 +3,7 @@ Reorders joints in each frame of a MoCap JSON from an original schema to a new t
 Reads an input JSON and writes a reordered output JSON.
 
 USAGE:
-> python reorder_triangulation_joints.py
+> python 03_reorder_triangulation_joints.py 
 
 """
 

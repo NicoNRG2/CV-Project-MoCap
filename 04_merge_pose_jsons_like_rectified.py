@@ -2,8 +2,9 @@
 Merge multiple YOLO-Pose json outputs into a single COCO-like json file,
 suitable for triangulation in 02_triangulation.py.
 
-Usage:
-python 04_merge_pose_jsons_like_rectified.py 04_temp/labels2_filtered_adapted.json 04_temp/labels5_filtered_adapted.json 04_temp/labels8_filtered_adapted.json 04_temp/labels13_filtered_adapted.json --out 04_annotations_yolo.json
+USAGE:
+> python 04_merge_pose_jsons_like_rectified.py temp/04_temp/labels2_filtered_adapted.json temp/04_temp/labels5_filtered_adapted.json temp/04_temp/labels8_filtered_adapted.json temp/04_temp/labels13_filtered_adapted.json --out temp/04_temp/annotations_yolo.json
+
 """
 
 import json

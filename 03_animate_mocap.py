@@ -3,7 +3,7 @@ Animates a 3D/2D MoCap skeleton from a JSON with 18 joints, supporting optional 
 Exports to MP4/GIF and auto-opens the result with the system viewer.
 
 USAGE:
-> python 03_animate_mocap.py --input temp/03_temp/03_selected_keypoints_adapted_joints.json --out temp/03_temp/03_animate_mocap_100fps.mp4 --fps 100 --view 3d
+> python 03_animate_mocap.py --input temp/03_temp/03_final_mocap.json --out temp/03_temp/03_final_mocap.gif --fps 12
 
 """
 

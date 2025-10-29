@@ -3,8 +3,8 @@ Plots, on the same figure, rectified COCO keypoints vs reprojected keypoints for
 Useful to visually check reprojection consistency.
 
 USAGE:
-> python 02_debug_plot_2D_compare_keypoints.py 10
-
+> python 02_debug_plot_2D_compare_keypoints.py [frame_number]
+    n.b. frame_number can be from 1 to 48
 """
 
 import json

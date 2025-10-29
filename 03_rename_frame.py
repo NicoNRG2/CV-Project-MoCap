@@ -2,7 +2,7 @@
 Renames all frame keys in a JSON file sequentially (e.g., frame_0001, frame_0002, …) and saves the result to a new file.
 
 USAGE:
-> python 03_rename_frame.py
+> python 03_rename_frame.py 
 
 """
 import json

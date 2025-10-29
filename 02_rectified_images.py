@@ -3,6 +3,7 @@ Rectifies images using per-camera calibration (mtx, dist) by precomputing undist
 
 USAGE:
 > python 02_rectified_images.py
+
 """
 
 import cv2

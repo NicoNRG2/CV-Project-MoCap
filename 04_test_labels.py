@@ -1,8 +1,8 @@
 """
 Visualize YOLO Pose labels (bbox, ID, keypoints, skeleton) on top of images.
 
-Usage:
-  python 04_test_labels.py --images ./images_rectified/cam_13 --json 04_labels13.json --outdir ./04_temp13
+USAGE:
+> python 04_test_labels.py --images images_rectified/cam_2 --json temp/04_temp/labels2.json --outdir temp/04_temp/cam2
 
 Notes:
 - The JSON file is the one produced by the inference script (field "images" with "persons":[{id,score,bbox,keypoints}]).

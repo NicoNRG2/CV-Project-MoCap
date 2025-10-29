@@ -4,7 +4,7 @@ and exports to MP4/GIF. Supports downsampling, frame limits, and auto-opening th
 
 USAGE: 
 > python 02_animate_triangulation.py  --input temp/02_temp/02_triangulated_3d_skeleton.json --out temp/02_temp/02_triangulated_skeleton.gif --fps 12
-add --no-open if you do NOT want the gif to open automatically
+    add --no-open if you do NOT want the gif to open automatically
 
 """
 

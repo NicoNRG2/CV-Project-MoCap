@@ -1,3 +1,12 @@
+"""
+This script automates the execution of the step2 pipeline scripts
+
+USAGE:
+> python 99_STEP2_PIPELINE.py
+
+"""
+
+
 import subprocess
 import sys
 
