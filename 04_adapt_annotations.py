@@ -1,8 +1,9 @@
 """
-This script filters a COCO-format JSON file to retain only specified keypoints.
+Description:
+Script to adapt original COCO annotations by filtering and reordering keypoints to YOLO format.
 
-Usage:
-python 04_adapt_annotations.py --input temp/02_temp/02_annotations.coco.rectified.json --output temp/04_temp/04_original_annotations_filtered.json
+USAGE:
+> python 04_adapt_annotations.py --input temp/02_temp/02_annotations.coco.rectified.json --output temp/04_temp/04_original_annotations_filtered.json
 """
 
 #!/usr/bin/env python3
@@ -10,7 +11,7 @@ import json
 import argparse
 from copy import deepcopy
 
-# joints presenti nel file di input, nell'ordine in cui compaiono in "categories[...]['keypoints']"
+# joints present in the input file, in the same order as in "categories[...]['keypoints']"
 INPUT_JOINTS = [
     "Hips",
     "RHip",
@@ -32,7 +33,7 @@ INPUT_JOINTS = [
     "LHand",
 ]
 
-# joint da tenere e loro ordine finale richiesto
+# joints to keep and their desired final order
 OUTPUT_JOINTS = [
     "Head",
     "LShoulder", "RShoulder",
@@ -43,38 +44,39 @@ OUTPUT_JOINTS = [
     "LAnkle", "RAnkle",
 ]
 
-# joint da scartare completamente
+# joints to completely discard
 DROP_JOINTS = {"Hips", "Spine", "Neck", "LFoot", "RFoot"}
+
 
 def slice_keypoints(flat_kps, idx):
     """
-    flat_kps = [x0,y0,v0,x1,y1,v1,...]
-    idx = indice del joint (0-based) nell'ordine INPUT_JOINTS
-    ritorna (x,y,v) di quel joint
+    flat_kps = [x0, y0, v0, x1, y1, v1, ...]
+    idx = index of the joint (0-based) in INPUT_JOINTS order
+    returns (x, y, v) for that joint
     """
     base = idx * 3
     return flat_kps[base:base+3]
 
+
 def build_reordered_keypoints(flat_kps):
     """
-    Prende i keypoints originali (tutti) e restituisce
-    una nuova lista piatta coi soli joint richiesti
-    in OUTPUT_JOINTS, nell'ordine richiesto.
+    Takes the original keypoints (flattened) and returns a new flattened list
+    containing only the desired joints in OUTPUT_JOINTS order.
     """
-    # mappa nome_joint -> indice nell'input
+    # map joint_name -> index in the input
     name_to_input_idx = {name: i for i, name in enumerate(INPUT_JOINTS)}
 
     new_flat = []
     for joint_name in OUTPUT_JOINTS:
         if joint_name not in name_to_input_idx:
-            # se manca completamente nell'input metto (0,0,0)
+            # if the joint is missing in the input, append (0,0,0)
             new_flat.extend([0.0, 0.0, 0])
             continue
 
         i_in = name_to_input_idx[joint_name]
         x, y, v = slice_keypoints(flat_kps, i_in)
 
-        # se per qualche motivo il joint è nella DROP_JOINTS lo annullo
+        # if, for any reason, the joint is in DROP_JOINTS, nullify it
         if joint_name in DROP_JOINTS:
             x, y, v = 0.0, 0.0, 0
 
@@ -82,29 +84,29 @@ def build_reordered_keypoints(flat_kps):
 
     return new_flat
 
+
 def main():
     parser = argparse.ArgumentParser(
-        description="Filtra e riordina i keypoints delle annotazioni COCO-style."
+        description="Filter and reorder COCO-style annotation keypoints."
     )
-    parser.add_argument("--input", required=True, help="file json di input")
-    parser.add_argument("--output", required=True, help="file json di output")
+    parser.add_argument("--input", required=True, help="input JSON file")
+    parser.add_argument("--output", required=True, help="output JSON file")
     args = parser.parse_args()
 
     with open(args.input, "r") as f:
         data = json.load(f)
 
-    # --- aggiorna categories ---
+    # --- update categories ---
     new_data = deepcopy(data)
 
-    # troviamo la category 'person' (o la prima con 'keypoints')
+    # find the 'person' category (or the first with 'keypoints')
     for cat in new_data.get("categories", []):
         if "keypoints" in cat and len(cat["keypoints"]) > 0:
-            # sostituiamo la lista dei keypoints con l'ordine nuovo
+            # replace the keypoints list with the new order
             cat["keypoints"] = OUTPUT_JOINTS[:]
 
-            # opzionale: ricrea uno skeleton minimale coerente col nuovo ordine
-            # qui facciamo qualcosa di semplice tipo braccia/gambe
-            # ogni coppia è (idx1, idx2) 1-based come COCO
+            # optional: recreate a minimal skeleton consistent with the new order
+            # each pair is (idx1, idx2) — COCO uses 1-based indexing
             SKELETON_DEF = [
                 ("Head", "LShoulder"),
                 ("Head", "RShoulder"),
@@ -119,7 +121,7 @@ def main():
                 ("LHip", "RHip"),
             ]
 
-            # crea mappa nome->1-based index nel nuovo ordine
+            # map joint_name -> 1-based index in the new order
             out_index = {name: i+1 for i, name in enumerate(OUTPUT_JOINTS)}
 
             new_skel = []
@@ -130,7 +132,7 @@ def main():
             cat["skeleton"] = new_skel
             break
 
-    # --- aggiorna annotations ---
+    # --- update annotations ---
     for ann in new_data.get("annotations", []):
         if "keypoints" not in ann:
             continue
@@ -139,9 +141,9 @@ def main():
         new_kps = build_reordered_keypoints(old_kps)
         ann["keypoints"] = new_kps
 
-        # opzionale: aggiorna num_keypoints se presente
+        # optional: update num_keypoints if present
         if "num_keypoints" in ann:
-            # conteggia quanti joint hanno visibility>0
+            # count how many joints have visibility > 0
             vis_count = 0
             for i in range(0, len(new_kps), 3):
                 v = new_kps[i+2]
@@ -149,11 +151,12 @@ def main():
                     vis_count += 1
             ann["num_keypoints"] = vis_count
 
-    # scrivi output
+    # write output
     with open(args.output, "w") as f:
         json.dump(new_data, f, indent=2)
 
-    print(f"Fatto. Salvato in {args.output}")
+    print(f"Done. Saved to {args.output}")
+
 
 if __name__ == "__main__":
     main()
