@@ -117,20 +117,33 @@ def main():
          "temp/04_temp/labels13_filtered_adapted.json",
          "--out", "temp/04_temp/annotations_yolo.json"],desc=Fore.GREEN + Style.BRIGHT +": merged all filtered YOLO JSONs (cam_2, cam_5, cam_8, cam_13) into a single COCO-style annotation file.", pause=True)
 
-    # 8) Triangolazione (SINGOLO, pausa)
+#####################
+# 8) Adapt annotaitons
+    run([PY, "python python 04_adapt_annotations.py --input temp/02_temp/02_annotations.coco.rectified.json --output temp/04_temp/04_original_annotations_filtered.json"],desc=Fore.GREEN + Style.BRIGHT +": descrizione.", pause=True)
+
+# 9) Eval
+    run([PY, "python 04_eval_yolo_annotations.py"],desc=Fore.GREEN + Style.BRIGHT +": descrizione.", pause=True)
+
+
+########################
+
+
+
+
+    # 10) Triangolazione (SINGOLO, pausa)
     run([PY, "02_triangulation.py",
          "--input", "temp/04_temp/annotations_yolo.json",
          "--output", "temp/04_temp/04_triangulated_yolo.json"], desc=Fore.GREEN + Style.BRIGHT +": triangulated 3D joint positions from the YOLO-Pose 2D detections (using the same script of step 2).", pause=True)
 
-    # 9) Animazione YOLO (SINGOLO, pausa)
+    # 11) Animazione YOLO (SINGOLO, pausa)
     run([PY, "04_animate_yolo.py",
          "--input", "temp/04_temp/04_triangulated_yolo.json",
          "--out", "temp/04_temp/04_yolo.gif", "--fps", "12"], desc=Fore.GREEN + Style.BRIGHT +": created a 3D animated GIF of the reconstructed skeleton from YOLO detections.", pause=True)
 
-    # 10) Adattamento MoCap (SINGOLO, pausa)
+    # 12) Adattamento MoCap (SINGOLO, pausa)
     run([PY, "04_adapt_mocap.py"], desc=Fore.GREEN + Style.BRIGHT +": removed extra joints from the MoCap data to make it compatible with the YOLO skeleton.", pause=True)
 
-    # 11) Confronto finale (SINGOLO, pausa)
+    # 13) Confronto finale (SINGOLO, pausa)
     run([PY, "03_step3compare.py",
          "--mocap", "temp/04_temp/04_adapted_final_mocap.json",
          "--triang", "temp/04_temp/04_triangulated_yolo.json",

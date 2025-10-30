@@ -201,6 +201,8 @@ For the human pose estimation step, we used the pre-trained **YOLO v11 pose mode
 | `python 04_remove_multiple_people.py` | Filters frames containing multiple detections, keeping only the player of interest across all cameras. |
 | `python 04_adapt_keypoint.py` | For each camera (2,5,8,13), removes incompatible or irrelevant joints from the YOLO output to match the MoCap joint set. |
 | `python 04_merge_pose_jsons_like_rectified.py` | Merges all filtered YOLO JSONs (`cam_2`, `cam_5`, `cam_8`, `cam_13`) into a single COCO-style annotation file. |
+| `python python 04_adapt_annotations.py`|descrizione|
+| `python 04_eval_yolo_annotations.py`|descrizione|
 | `python 02_triangulation.py` | Triangulates 3D joint positions from the YOLO-Pose 2D detections (using the same script of step 2). |
 | `python 04_animate_yolo.py` | Creates a **3D animated GIF** of the reconstructed skeleton from YOLO detections. |
 | `python 04_adapt_mocap.py` | Removes extra joints from the MoCap data to make it compatible with the YOLO skeleton. |
@@ -237,6 +239,9 @@ python 04_adapt_keypoint.py 8
 python 04_adapt_keypoint.py 13
 
 python 04_merge_pose_jsons_like_rectified.py temp/04_temp/labels2_filtered_adapted.json temp/04_temp/labels5_filtered_adapted.json temp/04_temp/labels8_filtered_adapted.json temp/04_temp/labels13_filtered_adapted.json --out temp/04_temp/annotations_yolo.json
+
+python python 04_adapt_annotations.py --input temp/02_temp/02_annotations.coco.rectified.json --output temp/04_temp/04_original_annotations_filtered.json
+python 04_eval_yolo_annotations.py
 
 python 02_triangulation.py --input temp/04_temp/annotations_yolo.json --output temp/04_temp/04_triangulated_yolo.json
 python 04_animate_yolo.py --input temp/04_temp/04_triangulated_yolo.json --out temp/04_temp/04_yolo.gif --fps 12
