@@ -2,18 +2,19 @@
 
 # 📑 Index
 
-- [Project Goal](#project-goal)  
-- [Requirements](#️requirements)  
-- [Project Steps](#project-steps)  
+- [Project Goal](#-project-goal)  
+- [Requirements](#️-requirements)  
+- [Project Steps](#-project-steps)  
   - [1. Annotate Player’s Poses](#1-annotate-players-poses)  
   - [2. 3D Player Reconstruction via Triangulation](#2-3d-player-reconstruction-via-triangulation)  
   - [3. Alignment with Motion Capture Data](#3-alignment-with-motion-capture-data)  
   - [4. Human Pose Estimation](#4-human-pose-estimation)  
-- [Results](#results)  
+  - [4a. Visualization in Unreal Engine](#4a-visualization-in-unreal-engine)
+- [Results](#-results)  
   - [Evaluation Metrics](#evaluation-metrics)  
   - [Triangulation vs MoCap (STEP 3)](#triangulation-vs-mocap-step-3)  
   - [YOLO Pose Triangulation vs MoCap (STEP 4)](#yolo-pose-triangulation-vs-mocap-step-4)  
-- [Authors](#authors)
+- [Authors](#-authors)
 
 
 # 🎯 Project Goal
@@ -188,7 +189,6 @@ For the human pose estimation step, we used the pre-trained **YOLO v11 pose mode
 2. Evaluate the 2D estimated pose from YOLO with 2D ground truth annotations
 3. Triangulate the yolo pose from each camera view to estimate the 3D player pose (same code of step 2)
 4. Evaluate the 3D estimated pose with common HPE metric wrt motion capture data
-5. Display 3D data on Unreal Engine
 
 ### Script sequence and description 
 
@@ -243,6 +243,27 @@ python 04_adapt_mocap.py
 python 03_step3compare.py --mocap temp/04_temp/04_adapted_final_mocap.json --triang temp/04_temp/04_triangulated_yolo.json --align similarity
 ```
 
+## 4a. Visualization in Unreal Engine
+
+To visualize the reconstructed motion in **Unreal Engine**, follow these steps:
+
+1. **Export the animations from Blender:**
+   - Open an empty Blender project.
+   - Run the script `04_blender_create_fbx.py` **twice**:
+     - Once using the **MoCap data JSON**.
+     - Once using the **Triangulation JSON**.
+   - Each execution will generate an **FBX file** containing the corresponding 3D animation.
+
+2. **Import into Unreal Engine:**
+   - Create a **new blank project** in Unreal Engine.
+   - Import the two **FBX files** (MoCap and Triangulation) into the project.
+   - Add both animations to the **Level Sequence** or directly to the scene.
+
+3. **Play the animation:**
+   - Press **Play** to visualize and compare the MoCap and triangulated 3D skeletons directly in Unreal Engine.  
+
+
+<br>
 
 # 📊 Results
 
