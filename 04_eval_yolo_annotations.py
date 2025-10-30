@@ -1,4 +1,10 @@
-#!/usr/bin/env python3
+"""
+Evaluate YOLO-generated 2D keypoint annotations against ground truth.
+
+USAGE:
+> python 04_eval_yolo_annotations.py
+"""
+
 import json
 import math
 from pathlib import Path
