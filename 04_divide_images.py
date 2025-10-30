@@ -64,7 +64,7 @@ def main():
             shutil.move(str(p), str(dest))
         moved += 1
 
-    print(f"Completed. Moved: {moved} files. Skipped: {skipped} files (name not matching outN_* pattern).")
+    print(f"Moved: {moved} files. Skipped: {skipped} files (name not matching outN_* pattern).")
     print(f"Destination folders: {', '.join(str(d) for d in dest_dirs.values())}")
 
 if __name__ == "__main__":

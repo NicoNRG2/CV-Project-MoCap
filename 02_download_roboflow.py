@@ -129,7 +129,6 @@ def main():
     # 4 - Remove READMEs
     remove_readme_files(out_dir)
 
-    print("All Done!")
 
 if __name__ == "__main__":
     main()
