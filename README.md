@@ -1,5 +1,21 @@
 # Multiview 3D Pose Estimation: Manual vs YOLO-Pose Triangulation and MoCap Comparison
 
+# 📑 Index
+
+- [Project Goal](#project-goal)  
+- [Requirements](#️requirements)  
+- [Project Steps](#project-steps)  
+  - [1. Annotate Player’s Poses](#1-annotate-players-poses)  
+  - [2. 3D Player Reconstruction via Triangulation](#2-3d-player-reconstruction-via-triangulation)  
+  - [3. Alignment with Motion Capture Data](#3-alignment-with-motion-capture-data)  
+  - [4. Human Pose Estimation](#4-human-pose-estimation)  
+- [Results](#results)  
+  - [Evaluation Metrics](#evaluation-metrics)  
+  - [Triangulation vs MoCap (STEP 3)](#triangulation-vs-mocap-step-3)  
+  - [YOLO Pose Triangulation vs MoCap (STEP 4)](#yolo-pose-triangulation-vs-mocap-step-4)  
+- [Authors](#authors)
+
+
 # 🎯 Project Goal
 
 The goal of this project is to **estimate the 3D pose** of a basketball player recorded using a **multi-camera RGB** setup.  
@@ -122,7 +138,7 @@ python 03_animate_mocap.py --input temp/03_temp/03_final_triangulation.json --ou
 python 03_animate_mocap.py --input temp/03_temp/03_final_mocap.json --out temp/03_temp/03_final_mocap.gif --fps 12
 ```
 
-### Skeleton Mapping
+### Frame Alignment
 
 The following table shows the adaptations made to make the MoCap and Triangulation data compatible.
 
