@@ -14,6 +14,7 @@
   - [Evaluation Metrics](#evaluation-metrics)  
   - [Triangulation vs MoCap (STEP 3)](#triangulation-vs-mocap-step-3)  
   - [YOLO Pose Triangulation vs MoCap (STEP 4)](#yolo-pose-triangulation-vs-mocap-step-4)  
+  - [MoCap vs Triangulation on UE (STEP 4a)](#mocap-vs-triangulation-on-ue-step-4a)
 - [Authors](#-authors)
 
 
@@ -294,6 +295,10 @@ Coherent 3D reconstruction with ~7–8 cm average joint error.
   <img src="gif_results/03_final_mocap.gif" width="45%" />
 </p>
 
+## MoCap vs Triangulation on UE (STEP 4a):
+<p align="center">
+  <img src="gif_results/UE_render.gif" width="90%" />
+</p>
 
 # 👥 Authors
 
