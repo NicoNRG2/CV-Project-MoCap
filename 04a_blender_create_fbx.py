@@ -1,3 +1,9 @@
+"""
+Create animated spheres in Blender from mocap/tracking data stored in a JSON file
+
+Important: this script can only be executed inside Blender's scripting environment.
+"""
+
 import bpy
 import json
 import math

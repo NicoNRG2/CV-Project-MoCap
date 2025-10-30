@@ -69,7 +69,7 @@ def main():
         [PY, "04_yolo_pose.py", "--images", "images_rectified/cam_13",
          "--output", "temp/04_temp/labels13.json", "--weights", "yolo11l-pose.pt",
          "--imgsz", "3840", "--conf", "0.20", "--device", "cuda:0"],
-    ], pause_message=Fore.GREEN + Style.BRIGHT +"Completed: run YOLO-Pose inference on each camera’s images to detect human keypoints and export them as JSON files.\nPress ENTER to continue...")
+    ], pause_message=Fore.GREEN + Style.BRIGHT +"Completed: run YOLO-Pose inference on each camera’s images to detect human keypoints and export them as JSON files."+Fore.WHITE+ Style.BRIGHT+"\nPress ENTER to continue...")
 
     # 3) Controllo visivo (BLOCCO, UNA pausa alla fine)
     run_group([

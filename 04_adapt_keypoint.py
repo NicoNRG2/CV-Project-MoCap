@@ -2,8 +2,7 @@
 Script to adapt keypoints in a JSON file by filtering out unwanted joints.
 
 USAGE:
-> python 04_adapt_keypoint.py [keypoint_number]
-    n.b. in our case the keypoint to remove is 2,5,8,13: pass it as argument one by one.
+> python 04_adapt_keypoint.py [cam_number]
 
 """
 
