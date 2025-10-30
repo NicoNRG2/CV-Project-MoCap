@@ -119,10 +119,10 @@ def main():
 
 
     # 8) Adapt annotaitons
-    run([PY, "python python 04_adapt_annotations.py --input temp/02_temp/02_annotations.coco.rectified.json --output temp/04_temp/04_original_annotations_filtered.json"],desc=Fore.GREEN + Style.BRIGHT +": Script to adapt original COCO annotations by filtering and reordering keypoints to YOLO format.", pause=True)
+    run([PY, "04_adapt_annotations.py", "--input", "temp/02_temp/02_annotations.coco.rectified.json", "--output", "temp/04_temp/04_original_annotations_filtered.json"],desc=Fore.GREEN + Style.BRIGHT +": Script to adapt original COCO annotations by filtering and reordering keypoints to YOLO format.", pause=True)
 
     # 9) Eval
-    run([PY, "python 04_eval_yolo_annotations.py"],desc=Fore.GREEN + Style.BRIGHT +": Evaluate YOLO-generated 2D keypoint annotations against ground truth.", pause=True)
+    run([PY, "04_eval_yolo_annotations.py"],desc=Fore.GREEN + Style.BRIGHT +": Evaluate YOLO-generated 2D keypoint annotations against ground truth.", pause=True)
 
 
     # 10) Triangolazione (SINGOLO, pausa)
