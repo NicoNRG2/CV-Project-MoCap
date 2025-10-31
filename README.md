@@ -27,6 +27,12 @@ The estimated poses are then compared with ground-truth **MoCap** data to assess
 Additionally, we test a modern 2D human pose estimation algorithm (**YOLO-Pose**) and evaluate its performance.  
 At the end, we display the 3D skeleton on **Unreal Engine**.
 
+The steps of the project are summarized as follow:
+1. Annotate Player’s Poses
+2. 3D Player Reconstruction via Triangulation
+3. Align and compare the players’ poses annotations with the motion capture data
+4. Run a human pose estimation algorithm on multiview data, evaluate them with respect to the ground truth  
+   4a.  Visualize the skeleton in Unreal Engine
 
 
 # ⚙️ Requirements 
@@ -43,7 +49,8 @@ Run this command to install the required libraries:
 ├── 📁 gif_results                                    # gif obtained in the main steps of the pipeline
 ├── 📁 mocap_7_videos                                 # original video from the 4 cameras
 ├── 📁 train                                          # (create after 02_download_roboflow.py) contains the original dataset of our annotations
-├                                          
+├── 📁 (temp)                                         # all the files (json, gif, mp4, ...) created during the execution of the project are saved here
+├
 ├    #each of the following script is explained in the following section                                                        
 ├── 🐍 02_animate_triangulation.py                    # 02_*   --->   belongs to step 2 pipeline          
 ├── 🐍 02_compute_reprojection_error.py
