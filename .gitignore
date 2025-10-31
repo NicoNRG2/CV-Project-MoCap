@@ -8,3 +8,4 @@ train/
 images_rectified/
 rectified_videos/
 yolo11l-pose.pt
+project_structure.md

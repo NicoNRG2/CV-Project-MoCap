@@ -3,7 +3,8 @@
 # 📑 Index
 
 - [Project Goal](#-project-goal)  
-- [Requirements](#️-requirements)  
+- [Requirements](#️-requirements)
+- [Project Structure](#️-project-structure)  
 - [Project Steps](#-project-steps)  
   - [1. Annotate Player’s Poses](#1-annotate-players-poses)  
   - [2. 3D Player Reconstruction via Triangulation](#2-3d-player-reconstruction-via-triangulation)  
@@ -34,6 +35,61 @@ Python version:
 Run this command to install the required libraries:  
 ```pip install -r requirements.txt```    
 
+# 🗂️ Project Structure
+
+```
+├── 📁 camera_data                                    # calibration files of the 4 cameras
+├── 📁 docs                                           # presentation, report, video results, links of the project
+├── 📁 gif_results                                    # gif obtained in the main steps of the pipeline
+├── 📁 mocap_7_videos                                 # original video from the 4 cameras
+├── 📁 train                                          # (create after 02_download_roboflow.py) contains the original dataset of our annotations
+├                                          
+├    #each of the following script is explained in the following section                                                        
+├── 🐍 02_animate_triangulation.py                    # 02_*   --->   belongs to step 2 pipeline          
+├── 🐍 02_compute_reprojection_error.py
+├── 🐍 02_debug_draw_keypoint_over_frame_check.py
+├── 🐍 02_debug_plot_2D_compare_keypoints.py
+├── 🐍 02_download_roboflow.py
+├── 🐍 02_generate_reprojected_annotations.py
+├── 🐍 02_plot_3D_skeleton.py
+├── 🐍 02_rectified_annotations.py
+├── 🐍 02_rectified_images.py
+├── 🐍 02_rectified_videos.py
+├── 🐍 02_triangulation.py
+├
+├── 🐍 03_adapt_skeleton.py                           # 03_*   --->   belongs to step 3 pipeline
+├── 🐍 03_animate_mocap.py
+├── 🐍 03_cut_frames.py
+├── ⚙️ 03_position_data_mocap.json                    # taken from the .mat file: contains the position_data of the MoCap
+├── 🐍 03_rename_frame.py
+├── 🐍 03_reorder_triangulation_joints.py
+├── 🐍 03_step3compare.py
+├── 🐍 03_subsample_mocap.py
+├── 🐍 04_adapt_annotations.py                        # 04_*   --->   belongs to step 4 pipeline
+├── 🐍 04_adapt_keypoint.py
+├── 🐍 04_adapt_mocap.py
+├── 🐍 04_animate_yolo.py
+├── 🐍 04_divide_images.py
+├── 🐍 04_eval_yolo_annotations.py
+├── 🐍 04_merge_pose_jsons_like_rectified.py
+├── 🐍 04_remove_multiple_people.py
+├── 🐍 04_test_labels.py
+├── 🐍 04_yolo_pose.py
+├
+├── 📄 04a_anim_mocap_spheres.fbx                    # 04a_*   --->   belongs to step 4a pipeline
+├── 📄 04a_anim_triangulation_spheres.fbx
+├── 🐍 04a_blender_create_fbx.py
+├
+├── 🐍 99_STEP2_PIPELINE.py                          # automatically run all the script of step 2 pipeline
+├── 🐍 99_STEP3_PIPELINE.py                          # automatically run all the script of step 3 pipeline
+├── 🐍 99_STEP4_PIPELINE.py                          # automatically run all the script of step 4 pipeline
+├
+├── 📝 README.md
+└── 📄 requirements.txt                              # list of requirements to run the project
+
+```
+
+<br>
 
 # 📋 Project Steps
 
