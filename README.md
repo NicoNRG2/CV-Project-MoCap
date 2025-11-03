@@ -318,6 +318,7 @@ To visualize the reconstructed motion in **Unreal Engine**, follow these steps:
 
 1. **Export the animations from Blender:**
    - Open an empty Blender project.
+   - Paste the script and change the absolute path of the input and output.
    - Run the script `04_blender_create_fbx.py` **twice**:
      - Once using the **MoCap data JSON**.
      - Once using the **Triangulation JSON**.
@@ -326,6 +327,7 @@ To visualize the reconstructed motion in **Unreal Engine**, follow these steps:
 2. **Import into Unreal Engine:**
    - Create a **new blank project** in Unreal Engine.
    - Import the two **FBX files** (MoCap and Triangulation) into the project.
+   - Check the setting "Snap to closest frame boundary"
    - Add both animations to the **Level Sequence** or directly to the scene.
 
 3. **Play the animation:**

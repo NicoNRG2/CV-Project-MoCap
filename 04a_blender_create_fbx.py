@@ -12,8 +12,8 @@ from mathutils import Vector
 # ============== PARAMETERS ==============
 #JSON_PATH = r"C:\Users\nicol\Desktop\03_final_mocap.json"
 #FBX_OUT   = r"C:\Users\nicol\Desktop\anim_mocap_spheres.fbx"
-JSON_PATH = r"C:\Users\nicol\Desktop\03_final_triangulation.json"
-FBX_OUT   = r"C:\Users\nicol\Desktop\anim_triangulation_spheres.fbx"
+JSON_PATH = r"C:\Users\nicol\Desktop\03_final_triangulation.json"       # change to your input JSON file
+FBX_OUT   = r"C:\Users\nicol\Desktop\anim_triangulation_spheres.fbx"    # change to your desired output FBX file
 
 FPS       = 12             # frame rate
 SCALE     = 0.001          # 0.001 = millimeters -> meters
