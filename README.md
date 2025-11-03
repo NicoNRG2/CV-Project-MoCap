@@ -105,7 +105,7 @@ Run this command to install the required libraries:
 - **Only the person wearing the black MoCap suit** was annotated.
 - Annotations were created using **Roboflow** and exported in **COCO JSON format**.
 
-![annotation_roboflow](video/annotation.png)  
+![annotation_roboflow](gif_results/annotation.png)  
 
 
 ## 2. 3D Player Reconstruction via Triangulation
@@ -338,8 +338,9 @@ To visualize the reconstructed motion in **Unreal Engine**, follow these steps:
 
 ## Evaluation Metrics
 - Mean Per Joint Position Error (MPJPE)
+- Median Per Joint Position Error (MedPJPE)
 - Mean Squared Error (MSE)
-- Median Joint Error
+- Root Mean Squared Error (RMSE)
 
 ## Triangulation vs MoCap (STEP 3):
 
@@ -356,7 +357,7 @@ Coherent 3D reconstruction with ~7–8 cm average joint error.
 
 MPJPE 68.9 mm (mean), 66.1 mm (median)<br>
 MSE 5947.1 mm², RMSE 75.3 mm<br>
-Coherent 3D reconstruction with ~7–8 cm average joint error.
+Results close to manual pipeline.
 
 <p align="center">
   <img src="gif_results/04_yolo.gif" width="45%" />

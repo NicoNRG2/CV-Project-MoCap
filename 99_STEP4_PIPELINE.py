@@ -1,11 +1,7 @@
 """
-STEP 04 pipeline runner
+This script automates the execution of the step4 pipeline scripts
 
-Esegue gli script della pipeline 04 in sequenza.
-- I comandi "singoli" chiedono SEMPRE ENTER al termine (pause=True).
-- I blocchi run_group(...) chiedono ENTER una sola volta alla fine del blocco.
-
-USO:
+USAGE:
 > python 99_STEP4_PIPELINE.py
 """
 
@@ -52,10 +48,10 @@ def main():
     ensure_dirs()
     print(Fore.BLUE + Style.BRIGHT + "\n=== STEP 4 PIPELINE ===")
 
-    # 1) Split images (SINGOLO, pausa)
+    # 1) Split images 
     run([PY, "04_divide_images.py"],desc=Fore.GREEN + Style.BRIGHT +": splitted all rectified images into subfolders based on their camera ID (cam_2, cam_5, cam_8, cam_13).",  pause=True)
 
-    # 2) YOLO pose su ciascuna camera (BLOCCO, UNA pausa alla fine)
+    # 2) YOLO pose on each camera
     run_group([
         [PY, "04_yolo_pose.py", "--images", "images_rectified/cam_2",
          "--output", "temp/04_temp/labels2.json", "--weights", "yolo11l-pose.pt",
@@ -69,9 +65,9 @@ def main():
         [PY, "04_yolo_pose.py", "--images", "images_rectified/cam_13",
          "--output", "temp/04_temp/labels13.json", "--weights", "yolo11l-pose.pt",
          "--imgsz", "3840", "--conf", "0.20", "--device", "cuda:0"],
-    ], pause_message=Fore.GREEN + Style.BRIGHT +"Completed: run YOLO-Pose inference on each camera’s images to detect human keypoints and export them as JSON files."+Fore.WHITE+ Style.BRIGHT+"\nPress ENTER to continue...")
+    ], pause_message=Fore.GREEN + Style.BRIGHT +"Completed: run YOLO-Pose inference on each camera’s images to detect human keypoints and export them as JSON files.\n"+Fore.WHITE+ Style.BRIGHT+"Press ENTER to continue...")
 
-    # 3) Controllo visivo (BLOCCO, UNA pausa alla fine)
+    # 3) Visual inspection
     run_group([
         [PY, "04_test_labels.py", "--images", "images_rectified/cam_2",
          "--json", "temp/04_temp/labels2.json", "--outdir", "temp/04_temp/cam2"],
@@ -81,7 +77,7 @@ def main():
          "--json", "temp/04_temp/labels8.json", "--outdir", "temp/04_temp/cam8"],
         [PY, "04_test_labels.py", "--images", "images_rectified/cam_13",
          "--json", "temp/04_temp/labels13.json", "--outdir", "temp/04_temp/cam13"],
-    ], pause_message=Fore.GREEN + Style.BRIGHT +"Completed: visualized detected keypoints on sample images to verify YOLO-Pose results for each camera.\nPress ENTER to continue...")
+    ], pause_message=Fore.GREEN + Style.BRIGHT +"Completed: visualized detected keypoints on sample images to verify YOLO-Pose results for each camera.\n"+Fore.WHITE+ Style.BRIGHT+"Press ENTER to continue...")
 
     print("Go to temp/04_temp and, for each camera (cam2, cam5, cam8, cam13), enter the player's id (black tracksuit).")
     keep2 = ask_keep_id("cam_2")
@@ -89,7 +85,7 @@ def main():
     keep8 = ask_keep_id("cam_8")
     keep13 = ask_keep_id("cam_13")
 
-    # 5) Filtra per keep_id (BLOCCO, UNA pausa alla fine)
+    # 5) Filter by keep_id
     run_group([
         [PY, "04_remove_multiple_people.py", "--input", "temp/04_temp/labels2.json",
          "--output", "temp/04_temp/labels2_filtered.json", "--keep_id", str(keep2)],
@@ -99,17 +95,17 @@ def main():
          "--output", "temp/04_temp/labels8_filtered.json", "--keep_id", str(keep8)],
         [PY, "04_remove_multiple_people.py", "--input", "temp/04_temp/labels13.json",
          "--output", "temp/04_temp/labels13_filtered.json", "--keep_id", str(keep13)],
-    ], pause_message=Fore.GREEN + Style.BRIGHT +"Completed: filtered frames containing multiple detections, keeping only the player of interest across all cameras.\nPress ENTER to continue...")
+    ], pause_message=Fore.GREEN + Style.BRIGHT +"Completed: filtered frames containing multiple detections, keeping only the player of interest across all cameras.\n"+Fore.WHITE+ Style.BRIGHT+"Press ENTER to continue...")
 
-    # 6) Adattamento keypoint (BLOCCO, UNA pausa alla fine)
+    # 6) Keypoint adaptation
     run_group([
         [PY, "04_adapt_keypoint.py", "2"],
         [PY, "04_adapt_keypoint.py", "5"],
         [PY, "04_adapt_keypoint.py", "8"],
         [PY, "04_adapt_keypoint.py", "13"],
-    ], pause_message=Fore.GREEN + Style.BRIGHT +"Completed: removes incompatible or irrelevant joints from the YOLO output to match the MoCap joint set.\nPress ENTER to continue...")
+    ], pause_message=Fore.GREEN + Style.BRIGHT +"Completed: removes incompatible or irrelevant joints from the YOLO output to match the MoCap joint set.\n"+Fore.WHITE+ Style.BRIGHT+"Press ENTER to continue...")
 
-    # 7) Merge (SINGOLO, pausa)
+    # 7) Merge
     run([PY, "04_merge_pose_jsons_like_rectified.py",
          "temp/04_temp/labels2_filtered_adapted.json",
          "temp/04_temp/labels5_filtered_adapted.json",
@@ -118,27 +114,27 @@ def main():
          "--out", "temp/04_temp/annotations_yolo.json"],desc=Fore.GREEN + Style.BRIGHT +": merged all filtered YOLO JSONs (cam_2, cam_5, cam_8, cam_13) into a single COCO-style annotation file.", pause=True)
 
 
-    # 8) Adapt annotaitons
+    # 8) Adapt annotations
     run([PY, "04_adapt_annotations.py", "--input", "temp/02_temp/02_annotations.coco.rectified.json", "--output", "temp/04_temp/04_original_annotations_filtered.json"],desc=Fore.GREEN + Style.BRIGHT +": Script to adapt original COCO annotations by filtering and reordering keypoints to YOLO format.", pause=True)
 
     # 9) Eval
     run([PY, "04_eval_yolo_annotations.py"],desc=Fore.GREEN + Style.BRIGHT +": Evaluate YOLO-generated 2D keypoint annotations against ground truth.", pause=True)
 
 
-    # 10) Triangolazione (SINGOLO, pausa)
+    # 10) Triangulation
     run([PY, "02_triangulation.py",
          "--input", "temp/04_temp/annotations_yolo.json",
          "--output", "temp/04_temp/04_triangulated_yolo.json"], desc=Fore.GREEN + Style.BRIGHT +": triangulated 3D joint positions from the YOLO-Pose 2D detections (using the same script of step 2).", pause=True)
 
-    # 11) Animazione YOLO (SINGOLO, pausa)
+    # 11) YOLO Animation
     run([PY, "04_animate_yolo.py",
          "--input", "temp/04_temp/04_triangulated_yolo.json",
          "--out", "temp/04_temp/04_yolo.gif", "--fps", "12"], desc=Fore.GREEN + Style.BRIGHT +": created a 3D animated GIF of the reconstructed skeleton from YOLO detections.", pause=True)
 
-    # 12) Adattamento MoCap (SINGOLO, pausa)
+    # 12) Adapt MoCap
     run([PY, "04_adapt_mocap.py"], desc=Fore.GREEN + Style.BRIGHT +": removed extra joints from the MoCap data to make it compatible with the YOLO skeleton.", pause=True)
 
-    # 13) Confronto finale (SINGOLO, pausa)
+    # 13) Final comparison
     run([PY, "03_step3compare.py",
          "--mocap", "temp/04_temp/04_adapted_final_mocap.json",
          "--triang", "temp/04_temp/04_triangulated_yolo.json",
